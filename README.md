@@ -12,3 +12,5 @@ Das Workbook wurde in RStudio als [Bookdown-Projekt](https://bookdown.org/) erst
 * data: Beinhaltet alle Datensätze des WorkBooks.
 * images: Beinhaltet alle nicht dynamisch erstellten Abbildungen des WorkBooks.
 * output: Ordner für die Ausgabe von Abbildungen.
+
+[![DOI](https://zenodo.org/badge/520438308.svg)](https://zenodo.org/badge/latestdoi/520438308)
