@@ -4,6 +4,8 @@ Hier findet Ihr das R Bookdown-Projekt zur **VU "How 2 do Things with even more 
 
 👉 https://kamihoeferl.at/lehre/vu_sozwiss_2/
 
+Dieses WorkBook und alle darüber angebotenen Materialien (Code, Daten etc.) stehen – so nicht ausdrücklich anders angegeben – unter einer [CC BY 4.0 Lizenz](https://creativecommons.org/licenses/by/4.0/deed.de).
+
 Das Workbook wurde in RStudio als [Bookdown-Projekt](https://bookdown.org/) erstellt. Zu den Foldern:
 
 * ___slides: Beinhaltet alle Folien des WorkBooks. Diese Folien wurden mittels [xaringan](https://slides.yihui.org/xaringan) hingeninjert - yolo 😉.
