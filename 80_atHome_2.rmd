@@ -1,0 +1,65 @@
+# \@Home2: Multiple Regression
+
+## 📢 Zielsetzung {.unnumbered}
+
+Ziel dieser Aufgabe ist es, selbständig a) ein univariates sowie ein multiples Regressionsmodell zu erstellen, b) deren Modellgüten und c) Konformitäten zu Modellannahmen linearer Regression zu beurteilen und d) die Modelle inhaltlich zu interpretieren.
+
+---
+
+## Ausgangslage
+
+Die Datei [🔽 atHome2_salaries.rds 🔽](data/atHome2_salaries.rds) beinhaltet Daten zu den Einkommen von ProfessorInnen an amerikanischen Colleges: 
+
+```{r Ausgangsdaten, echo=FALSE}
+head(readRDS("data/atHome2_salaries.rds"), 7) %>%
+  knitr::kable()
+```
+
+Eine kurze Dokumentation dieser Daten findet sich [👉 hier](https://www.rdocumentation.org/packages/car/versions/2.1-6/topics/Salaries).
+
+> 👉 Ein Recap zum Thema **Datenimport** findet sich [::hier::](https://kamihoeferl.at/lehre/vu_sozwiss_1/06_basics_datananalyse.html#daten-im--und-exportieren)
+
+## Aufgabenstellung
+
+Arbeiten Sie folgende zwei Aufgabenstellungen ab:
+
+1. Erstellen Sie anhand dieser Daten ein Regressionsmodell, das die Einkommen der ProfessorInnen erklärt. Vergleichen Sie dazu ein selbst gewähltes **multivariates** Modell mit einer **univariaten** Modellvariante.
+    + Welches der beiden Modelle erklärt das Einkommen der ProfessorInnen **besser** - und **warum**?
+2. Nutzen Sie ein Regressionsmodell, um herauszufinden, ob und ggf. wie das Geschlecht Einfluß (= **Gender-Bias**) auf die Gehälter nimmt.
+
+**👉 Nicht vergessen:**  
+Führen Sie bei jedem Ihrer Modelle aus, ob diese die Modellannahmen linearer Regression erfüllen.
+
+## Formelles
+
+* je 2-er Team 1 A4 Bericht als PDF
+    + Rekapitulation Aufgabenstellung (= Untersuchungsfragen)
+    + Datenaufbereitung
+    + Dokumentation der Analyse
+    + Ergebnisse
+    + Interpretation & Beantwortung der Untersuchungsfragen
+* Benennung: **Gruppe_XY_\@Home2.pdf**
+* Abgabe via **OLAT** - Ordner "\@Home2: Regression"
+* Deadline: **19.01.22 // 23.59 Uhr**
+
+## Empfehlung
+
+Nutzen Sie für diese Aufgabe folgende Verzeichnisstruktur:
+
+```
+Projektfolder
+| Skript_1.R
+| ...
+| Skript_n.R    
+|
++-- Data
+    | Datensatz_1.csv
+    | ...
+    | Datensatz_n.csv
+```
+
+---
+
+**🤔 Challange accepted?**
+
+![](images/good.gif){.videoframe width="210"}

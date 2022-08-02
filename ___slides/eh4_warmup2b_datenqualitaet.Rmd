@@ -1,0 +1,260 @@
+---
+title: "Warmup 2b: Auffindbarkeit & Nutzbarkeit von Daten"
+subtitle: "716408 | How 2 do Things with even more Numbers"
+author: "KMH"
+date: "WS 21-22 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    css: [mycss_metropolis_v1.css, metropolis, metropolis-fonts]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r xaringanExtras, echo=FALSE}
+xaringanExtra::use_share_again()  # für die Buttons zur Navigation
+xaringanExtra::use_tile_view()    # für den Overview auf die Slides
+```
+
+# Ein idealtypischer Ablauf
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_23.png")
+knitr::asis_output("</div>")
+```
+
+---
+
+class: zwischentitel, center, middle
+
+# .emolarge[🤔]<br>Woher kommen eigentlich die Daten?
+
+---
+
+# 2. Versuch: Woooohoooooo! 
+
+
+```{r echo=FALSE}
+  knitr::asis_output('<div class="container">')
+  knitr::include_graphics("images/get_started.gif")
+  knitr::asis_output('</div>')
+```
+.quelle[(Giphy)]
+
+---
+
+# Woher kommen die Daten?
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/EH4_warmup2_quality_S18_9.png")
+knitr::asis_output("</div>")
+```
+
+.quelle[(Dürr & Zepp 2012:60)]
+
+---
+
+# .font80[Exkurs: Die Primärerhebung quantitativer Daten]
+
+**3 zentrale Methoden:**
+
++ **Beobachtung:**  
+systematisches Beobachten & quant. Registrieren „relevanter“ Sachverhalte 
++ **Nonreaktive Verfahren:**  
+quant. Erfassen einzelner Merkmale von Interesse in Texten, Bildern & Videos
++ **Befragen:**  
+systematisch gesteuerte Kommunikation zwischen Personen; basierend auf standardisierten Fragen- & Antwortenkatalog
+
+---
+
+# Aus Primär- werden Sekundärdaten
+
+**Sekundärdaten**  
+durch Verarbeitung aus Primärdaten gewonnen
+- Eigene Erstellung
+- Erstellung durch Dritte
+- @ Verarbeitung:
+    + Klassifikation: Zordnung zu Klasse von Dingen mit gemeinsamen Eigenschaften
+    + Aggregation: Gruppierung bestehender Klassen zu neuen  
+    (🡒 Definition einer neuen Klasse)
+    + Generalisierung: Definition Teilmengen-Beziehung zwischen Elementen verschiedener Klassen
+
+---
+
+# .font70[@ Klassifikation, Aggregation & Generalisierung]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_21.png")
+knitr::asis_output("</div>")
+```
+
+---
+
+# .font70[@ Klassifikation, Aggregation & Generalisierung]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_22.png")
+knitr::asis_output("</div>")
+```
+
+---
+
+# .font80[Ein idealtypischer (vgl. Open Science) Ablauf]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_24.png")
+knitr::asis_output("</div>")
+```
+
+---
+
+class: zwischentitel , center, middle
+
+# .emolarge[🤔]<br>Daten sind Daten, oder?
+
+---
+
+# 3. Versuch: Woooohoooooo! 
+
+
+```{r echo=FALSE}
+  knitr::asis_output('<div class="container">')
+  knitr::include_graphics("images/get_started.gif")
+  knitr::asis_output('</div>')
+```
+.quelle[(Giphy)]
+
+---
+
+# Tirols Berge – ein Beispiel
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/EH4_warmup2_quality_S27_11.png")
+knitr::asis_output("</div>")
+```
+
+.quelle[(MVPhotoArt, pixabay)]
+
+---
+
+# Qualität & Eignung von Sekundärdaten
+
+.pull-left[
+
+* Relevanz 🡒 Fragestellung
+* Institutioneller Ursprung
+* Nachvollziehbarkeit:
+    + Erhebungsmethode
+        - Objektivität, Reliabilität & Validität
+    + Aufbereitung der Rohdaten
+    + inhaltl. Verständlichkeit
+* Nutzbarkeit 🡒 Lizenz
+
+]
+
+.pull-right[
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/EH4_warmup2_quality_S30_12.png")
+knitr::asis_output("</div>")
+```
+
+.quelle[(Shaddim, CC BY)]
+
+]
+
+---
+
+# Strategien der Datenvalidierung
+
+.spacing05[
+
+* Datentyp-bezogene Überprüfungen:
+    + Konsistenz
+    + Sonderzeichen etc.
+    + Dezimalzeichen etc.
+* Überprüfung von Spannweiten, Summen etc.
+    + BSP. bei %
+* Cross-Reference Check der Validität
+    + Was sagen andere Datenquellen?
+* Überprüfung der Konsistenz
+    + Lücken etc.
+* Überprüfung von Verweisen
+* …
+
+]
+
+---
+
+# Bedeutung von Open Data
+
+*"sämtliche Datenbestände, die im Interesse der Allgemeinheit […] ohne jedwede Einschränkung zur freien Nutzung, zur Weiterverbreitung und zur freien Weiterverwendung frei zugänglich gemacht werden."*  
+(Lucke & Geiger 2010:4)
+
++ Zugang
++ Weiterverbreitung
++ Folgenutzung
++ Abwesenheit technologischer Restriktionen (SIC!)
++ Keine Einschränkung der Einsatzzwecke
+
+---
+
+# Ein kleines Experiment:
+
+.pull-left[
+
+**Tirol - Idyll in den Alpen …**
+
+* Wie viele Gemeinden gibt es in Tirol?
+* Wie viele Männer und Frauen leben in jeder dieser Tiroler Gemeinden?
+
+]
+
+.pull-right[
+
+```{r echo=FALSE}
+  knitr::asis_output('<div class="container">')
+  knitr::include_graphics("images/eh4_warmup2/tirol.jpg")
+  knitr::asis_output('</div>')
+```
+.quelle[(barnyz, Flickr, CC BY-NC-ND 2.0)]
+
+]
+
+---
+
+# Woher Sekundärdaten beziehen?
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container400">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_34.png")
+knitr::asis_output("</div>")
+```
+
+* https://statcube.at
+* https://www-genesis.destatis.de
+
+---
+
+# Woher Sekundärdaten beziehen?
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh4_warmup2/ImageSlide_35.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Planemad, Wikimedia, CC0; GitHub, Wikimedia, CC0; GESIS, Wikimedia, CC0)]
+
+
+```{r include=FALSE}
+# Finale: Als PDF ablegen
+# pagedown::chrome_print("eh4_warmup2b_datenqualitaet.html")
+```

@@ -1,0 +1,23 @@
+bookdown::gitbook:
+  # Versuch JS-Inject
+  includes:
+    in_header: header.html
+  dev: "CairoPNG"   # aus Cairo Package
+  css: "style.css"
+  highlight: haddock
+  number_sections: TRUE
+  fig_caption: TRUE
+  split_by: "rmd"
+  split_bib: FALSE
+  config:
+    toc:
+      collapse: section
+    fontsettings:
+      theme: white  #'sepia', 'night' or 'white'
+      family: sans
+      size: 2
+    sharing:
+      facebook: FALSE
+      twitter: FALSE
+      all: FALSE
+    info: TRUE

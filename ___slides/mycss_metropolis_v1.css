@@ -1,0 +1,170 @@
+/* === Titelfolie === */
+
+.title-slide {
+  background-color: #FFFFFF !important;
+  background-image: url("images/logo_uibk.png");
+  background-position: 14% 0%;
+  background-size: 200px;
+  padding-left: 100px;  /* delete this for 4:3 aspect ratio */
+  border-top: 80px solid #FFFFFF !important;
+}
+
+.title-slide h1 {
+  line-height: 1.25;
+  color: #003361;
+}
+
+.title-slide h2 {
+  font-size: 30px;
+  margin-top: -20px;
+  line-height: 1.25;
+}
+
+hr, .title-slide h2::after, .mline h1::after {
+  margin-top: 25px; /* mehr Abstand */
+  background-color: #f39200;  /* Uni-Orange */
+  color: #f39200;
+  height: 2px;
+}
+
+/* === Zwischentitel === */
+
+/* für Emojis auf Zwischentiteln */
+.emolarge { font-size: 200% }
+
+.zwischentitel {
+  background-color: #003361 !important; /* Uni-Blau */
+  border-top: 80px solid #003361;
+  padding-bottom: 0em;
+}
+
+/* === Inhaltsfolien === */
+
+.pull-left {
+  margin:0;
+  float: left;
+  width: 47%;
+}
+
+.pull-right {
+  margin:0;
+  float: right;
+  width: 47%;
+}
+
+.remark-slide-content {
+  font-size: 26px;
+  line-height: 1.35;
+  background-color: #FFFFFF;
+  border-top: 80px solid #003361; /* Uni-Blau */
+}
+
+.remark-slide-content h1 {
+  padding-bottom: 0.5em;
+}
+
+.spacing085 ul li{
+  margin: 0.85em 0em 0.85em 0em;
+}
+.spacing095 ul li{
+  margin: 0.95em 0em 0.95em 0em;
+}
+.remark-slide-content ul li {
+  /* Padding bringt weniger - warum auch immer
+  padding-bottom: 1.95em;
+  */
+  margin: 0.75em 0em 0.75em 0em;
+  line-height: 1.3em;
+}
+.spacing06 ul li{
+  margin: 0.6em 0em 0.6em 0em;
+  line-height: 1.2em;
+}
+.spacing05 ul li{
+  margin: 0.5em 0em 0.5em 0em;
+  line-height: 1.1em;
+}
+
+/* Code-Chunks */
+.remark-code, .remark-inline-code {
+  font-family: 'Fira Code', 'Lucida Console', Monaco, monospace;
+  font-size: 50% !important;
+}
+
+/* Tabellen */
+
+table {
+  table-layout: auto;
+  width: 100%;
+}
+
+td, th {
+  border-collapse: collapse;
+  padding: 7px;
+  font-size: 75%;
+}
+
+tr:nth-child(even){background-color: #f2f2f2;}
+
+/*
+tr:hover {background-color: #ddd;}
+*/
+
+th {
+  text-align: left;
+  background-color: #E1AF00;
+  color: white;
+}
+
+/* Bilder */
+
+.remark-slide-content figure img {
+  width: 100%;
+}
+
+.container {
+    height: 490px;  /* Detailanpassung wegen .quelle */
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container450 {
+    height: 450px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container400 {
+    height: 400px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container350 {
+    height: 350px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container300 {
+    height: 300px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container250 {
+    height: 250px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+.container200 {
+    height: 200px;
+    width: 100%;
+    padding-bottom: 0em;
+}
+
+.container img, .container200 img, .container250 img, .container300 img, .container350 img, .container400 img, .container450 img {
+    height: 100%;
+    width: 100%;
+    object-fit: contain;
+}
+
+.quelle {
+  margin-top: 0;
+  font-size: 40%;
+}

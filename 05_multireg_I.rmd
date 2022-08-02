@@ -1,0 +1,601 @@
+# Multiple Regression I: Grundlagen linearer Modelle {#reg1}
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+In dieser Einheit sollen die **Grundlagen multipler Regression** - insbesondere die Beurteilung der **Modellgüte** und die Überprüfung eines Modells anhand der prinzipiellen **Modellannahmen** linearer Regression - an einem Beispiel behandelt werden.
+
+```{r echo=FALSE, purl=FALSE}
+# myScriptname <- tools::file_path_sans_ext(tail(strsplit(rstudioapi::getSourceEditorContext()$path, "/")[[1]], 1))
+myScriptname <- "05_multireg_I"
+
+knitr::asis_output(paste(
+  "<p><strong>tl;dr: </strong>",
+  "<a href=\"https://kamihoeferl.at/lehre/vu_sozwiss_2/",
+  myScriptname,
+  ".R\" type=\"application/octet-stream\">Her mit dem Code!</a></p>",
+  sep = ""))
+```
+
+------------------------------------------------------------------------
+
+## Ouvertüre {#ouvert-reg1}
+
+Zentrales Ziel einer multiplen linearen Regression ist das Ableiten einer abhängigen (= zu erklärenden) aus mehreren unabhängigen (= erklärenden) Variablen. Um diesen Prozess näher kennenzulernen, wollen wir versuchen, die **regionale Variabilität der Corona-Schutzimpfungsquoten in Österreich** zu erklären.
+
+Neben ersten individuellen Motivstudien ([Universität Wien, 2021](https://www.meduniwien.ac.at/web/ueber-uns/news/news-im-oktober-2021/studie-wie-impfkampagnen-und-medienberichte-die-motivationen-von-corona-impfskeptikerinnen-beeinflussen-koennten/)) liegen zur Erklärung der regionalen Variabilität von kommunalen und regionalen Impfquoten zum Stand Oktober 2021 erste Vermutungen zu möglichen Einflußfaktoren vor (zB [Momentum Institut, 2021](https://www.momentum-institut.at/news/welche-faktoren-die-impfquote-beguenstigen)):
+
+![](https://www.momentum-institut.at/sites/default/files/styles/artikel_full_large/public/2021-08/impfquote-impffaktoren-gemeinden-oesterreich-momentum-institut.jpg.webp?itok=0qC3RTBM)
+
+In dieser Einheit wollen wir einige dieser vermuteten Einflußfaktoren nutzen, um die unterschiedlichen Impfquoten (Stand 24.10.21) in den politischen Bezirken Österreichs zu erklären. Dazu greifen wir auf folgende Daten zurück:
+
+-   Corona-Impfquoten auf Gemeindeebene (BMSGPK, 2021):\
+    <https://www.data.gv.at/katalog/dataset/covid-19-schutzimpfungen-impfungen-in-gemeinden>
+-   Corona-Fallzahlen des Epidemiologischen Meldesystems (BMSGPK, 2021):\
+    <https://www.data.gv.at/katalog/dataset/covid-19-daten-covid19-faelle-je-gkz/resource/91528b11-44cf-4c03-ad62-209f8a704f9b>
+-   Ergebnisse der Nationalratswahl 2019 (BMI, 2019):\
+    <https://www.data.gv.at/katalog/dataset/ergebnisse-der-nationalratswahl-2019-aviso>
+-   Bevölkerung (2021) nach Staatsangehörigkeit (Statistik Austria, 2021):\
+    <https://www.statistik.at/web_de/statistiken/menschen_und_gesellschaft/bevoelkerung/bevoelkerungsstruktur/bevoelkerung_nach_staatsangehoerigkeit_geburtsland/index.html>
+-   Bevölkerung (2019) nach Altersgruppen (Statistik Austria, 2019):\
+    [http://www.statistik.at/web_de/statistiken/menschen_und_gesellschaft/bevoelkerung/volkszaehlungen_registerzaehlungen_abgestimmte_erwerbsstatistik/bevoelkerung_nach_demographischen_merkmalen/index.html](http://www.statistik.at/web_de/statistiken/menschen_und_gesellschaft/bevoelkerung/volkszaehlungen_registerzaehlungen_abgestimmte_erwerbsstatistik/bevoelkerung_nach_demographischen_merkmalen/index.html?utm_source=pocket_mylist)
+-   Bildungsstand der Bevölkerung (2019 - Statistik Austria, 2020):\
+    <https://www.statistik.at/web_de/statistiken/menschen_und_gesellschaft/bildung/bildungsstand_der_bevoelkerung/index.html>
+
+Diese Datensätze wurden in einer Excel-Datei gesammelt, mittels Aggregation auf die einheitliche Bezugsebene der politischen Bezirke gebracht und im Tabellenblatt "ex" miteinander verknüpft.
+
+[**🚩 Die Excel-Datei kann hier heruntergeladen werden 🚩**](data/corona_bez_regression_v1.xlsx)
+
+Neben diesen numerischen Daten nutzen wir in dieser Einheit auch folgenden Geodatensatz zur Visualisierung der Impfquoten:
+
+-   Politische Bezirke Österreichs 2021:  
+https://www.data.gv.at/katalog/dataset/stat_gliederung-osterreichs-in-politische-bezirke131e2/resource/d2659aca-306f-4e24-a318-bf9cfb32319f
+
+Den Inhalt dieses **ZIP-Archivs extrahieren** wir in unserem "data" Ordner in den **Unterordner "bez"**.
+
+> **👉 Anmerkung**: Wir gehen in dieser Einheit von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     bez
+    |       | geodatensatz_1.xyz
+    |       | ...
+    |       | geodatensatz_n.xyz
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+## Daten importieren {#dataimport-reg1}
+
+Über das **readxl-Package** laden wir zunächst die Daten aus dem Tabellenblatt "ex":
+
+```{r Datenimport, message=FALSE, warning=FALSE, results="hide"}
+library(readxl)     # Excel-Dateien lesen
+library(tidyverse)  # https://www.tidyverse.org/packages/
+
+daten <- read_excel("data/corona_bez_regression_v1.xlsx", sheet = "ex")
+```
+
+Damit erhalten wir:
+
+```{r}
+head(daten)
+```
+
+Also viele Daten. Einen schnellen Einblick in die Struktur dieser Daten erhalten wir hiermit:
+
+```{r}
+  str(daten)
+```
+
+## Daten validieren
+
+Wir werfen eine Blick auf die Daten, v.a. auf fehlende Werte. Dazu gibt es mehrere Vorgehensweisen. Beispielsweise können über die [::colSums::](https://stat.ethz.ch/R-manual/R-devel/library/base/html/colSums.html)-Funktion Spalten aufsummiert werden:
+
+```{r Missings_2}
+colSums(is.na(daten)) %>%
+  knitr::kable()
+```
+
+**Alternativ** ermöglicht das **dplyr-Package** es uns mittels [::across::](https://dplyr.tidyverse.org/reference/across.html) beliebige Funktionen auf (ausgewählte - hier exemplarisch nur numerische) Spalten anzuwenden:
+
+```{r Check NA mit dplyr, message=FALSE, warning=FALSE}
+daten %>%
+  summarise(across(where(is.numeric), ~ sum(is.na(.)))) %>%
+  t() %>%
+  knitr::kable()
+```
+
+Egal wie ermittelt, wir sehen, dass für die 23 Wiener Stadtbezirke keine Informationen zur Corona-bedingten Sterblichkeiten vorliegen. Da diese Informationen jedoch für die Stadt Wien gesamt vorliegen, können wir die Wiener Stadtbezirke (bez_id von 901 bis 923) bei unseren weiteren Analyse ausschließen.
+
+### Ein Exkurs: Die räumliche Variabilität der Impfquoten {#map-impfquoten}
+
+Bevor wir das Regressionsmodell bilden, wollen wir noch einen Blick auf die räumliche Verteilung der Impfquoten legen. Aber wie?
+
+Mittels des [Simple Features (sf) Packages](https://cran.r-project.org/web/packages/sf/index.html) können gängige Geodatenformate (zB SHP-Dateien) in R gelesen und beispielsweise über das [Thematic Maps (tmap) Package](https://cran.r-project.org/web/packages/tmap/index.html) visualisiert werden:
+
+```{r fig.width=9, fig.height=4.75}
+library(sf)
+library(tmap)
+bez <- read_sf("data/bez/STATISTIK_AUSTRIA_POLBEZ_20210101.shp")
+bez$id <- as.integer(bez$id)
+tm_shape(bez) +
+  tm_polygons()
+```
+
+Die PerfektionistInnen haben es bereits erkannt: Wien wird wieder als Summe seiner Stadtbezirke dargestellt. Ein Blick in den Geodatensatz verrät uns ...
+
+```{r}
+bez %>%
+  filter(id >= 900)
+```
+
+... dass für den politischen Bezirk Wien bereits ein Polygon vorhanden ist, jedoch von den Polygonen der Stadtbezirke überlagert wird. Um diese Überlagerung zu vermeiden, entfernen (= filtern) wir die Wiener Stadtbezirke aus dem Geodatensatz "bez":
+
+```{r fig.width=9, fig.height=4.75}
+bez.sel <- bez %>%
+  filter(id <= 900)
+tm_shape(bez.sel) +
+  tm_polygons()
+```
+
+Sieht doch gleich besser aus 😎
+
+Jetzt müssen wir nur noch unsere **Attributdaten** - die Impfquoten aus dem daten-Tibble - an die Geometrien der Bezirke hängen. Wie aus der Geoinformatik bekannt, verwenden wir dazu einen **Join** (konkret: die [left_join Funktion](https://dplyr.tidyverse.org/reference/mutate-joins.html) des [dplyr Packages](https://dplyr.tidyverse.org/)):
+
+```{r fig.width=9, fig.height=3.75}
+joined_bez.sel <- left_join(bez.sel, daten,
+                            by = c("id" = "bez_id"))
+str(joined_bez.sel)
+```
+
+Damit können wir nun eine einfache [Choroplethenkarte](https://de.wikipedia.org/wiki/Choroplethenkarte) zur Impfquote erstellen:
+
+```{r choropleth1, fig.width=9, fig.height=4.75}
+tmap::qtm(joined_bez.sel, fill = "anteil_immun")
+```
+
+Und wer das gerne noch mit etwas mehr 🚀 🎉 möchte:
+
+```{r choropleth2, fig.width=9, fig.height=3.75}
+mymap <- tm_shape(joined_bez.sel) +
+  tm_polygons("anteil_immun",
+              title = "Anteil \nImmunisierte [%]",
+              palette = "YlOrRd",
+              legend.hist = TRUE) +
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_legend(outside = TRUE,
+            legend.outside.size = 0.15,
+            hist.width = 1,
+            outer.margins = 0)
+mymap
+```
+
+**Was zeigen uns diese Karten?**
+
+1.  Man kann in R auch thematische Karten erstellen 😉
+2.  Die Bezirke im Burgenland und dem nördlichen Niederösterreich weisen die höchsten Impfquoten auf. Weiters sehen wir, dass einige Bezirke in der Mur-Mürz-Furche sowie der Bezirk Schwaz in Tirol hervorstechen.
+
+Zum Abschluß dieses Exkurses: Wie kann ich solche **Karten speichern** (zB in den Ordner "output")?
+
+```{r message=FALSE, warning=FALSE}
+tmap_save(mymap, filename = "output/impfquoten_bez_2021.png",
+          units = "px", dpi = 300,
+          width = 2000)
+```
+
+Moving on:
+
+## Die mathematischen Grundlagen linearer Modelle
+
+Damit kommen wir zum eigentlich Kern: Wie können wir die Impfquoten (anteil_immun) aus den restlichen Variablen dieses Datensatzes ableiten?
+
+Dazu werden wir ein **lineares Modell** nach diesem Vorbild schaffen:
+
+$$\hat{Y} = b_0 + b_1x_1 + b_2x_2 + ... +b_Jx_J$$
+
+$$\begin{aligned}
+  & \hat{Y}~ ...~abhängige~Variable\\
+  & b_{0...j}~...~Koeffizienten\\
+  & x_{1...j}~...~unabhängige~Variablen\\
+  & J~...~Zahl~der~unabhängigen~Variablen
+\end{aligned}$$
+
+Für dieses Modell wird die Summe der Differenzen ("Residuen") zwischen die modellierten ("Fitted values") und beobachteten Werten minimiert:
+
+$$
+\sum_{k=1}^{K}e_{k}^2 = \sum_{k=1}^{K}[y_k-(b_0 + b_1x_{1k} + b_2x_{2k} + ... +b_jx_{Jk})]^2 \rightarrow min
+$$
+
+$$\begin{aligned}
+  & e_k~...~Residuum~(k = 1, 2, ... K)\\
+  & y_k~...~Werte~abhängige~Variable~(k = 1, 2, ... K)\\
+  & b_0~...~Konstante~('Intercept')\\
+  & b_j~...~Koeffizienten~(j=1,2,...,J)\\
+  & x_{jk}~...~Werte~unabhängige~Variablen (j=1,2,...,J; k=1,2,...,K)\\
+  & J~...~Zahl~der~unabhängigen~Variablen\\
+  & K~...~Zahl~der~Beobachtungen
+\end{aligned}$$
+
+Bevor es aber so weit ist:
+
+## Die gedankliche Modellbildung
+
+Wir sollten uns zunächst darüber klar werden, mit **welchen Variablen** wir den Impfquoten der Bezirke erklären wollen. Dazu ein Blick auf die verfügbaren Daten:
+
+```{r Überblick Variablen}
+cbind(colnames(daten))
+```
+
+In einer ersten Runde wollen wir zunächst folgende **Variablen** zur Erklärung nutzen:
+
+-   Die Verstorbenen je 100.00 Einwohner (**tote_100k**)
+-   Der Anteil der über 65-Jährigen (**bev_anteil_65plus**)
+-   Der Anteil der Einwohner mit nicht-österreichischer Staatsbürgerschaft (**anteil_noaut**)
+-   Der Anteil der HochschulabsolventInnen an der Gesamtbevölkerung (**bildung_anteil_hochschule**)
+-   Der FPÖ-Stimmenanteil bei der Nationalratswahl 2019 (**nrw19_anteil_fpoe**)
+
+Dieses reduzierte Datenset legen wir als eigenen Tibble ab und entfernen auch noch die Wiener Gemeindebezirke (bez_id \> 900) daraus:
+
+```{r}
+sel.daten <- daten %>%
+  filter(bez_id <= 900) %>%
+  select(bez_id, bez_txt, anteil_immun, tote_100k, bev_anteil_65plus,
+         anteil_noaut, bildung_anteil_hochschule, nrw19_anteil_fpoe)
+```
+
+## Ein Blick auf die gewählten Variablen
+
+Nun wollen wir einen Blick auf die Wertverteilungen der ausgewählten Variablen werfen:
+
+```{r Streuung_Variablen}
+sel.daten %>%
+  select(anteil_immun:nrw19_anteil_fpoe) %>%
+  pivot_longer(cols = anteil_immun:nrw19_anteil_fpoe, names_to = "Variable", 
+               values_to = "Messwert") %>%
+  ggplot(., aes(x = Variable, y = Messwert)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1,alpha=0.2, color="red") +
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+```
+
+Wir sehen, dass die Variablen durchaus unterschiedliche absolute Wertverteilungen aufweisen.
+
+### Standardisierung von Variablen {#ztrans}
+
+Um Variablen mit unterschiedlichen absoluten **Wertverteilung besser vergleichbar** zu machen, können diese standardisiert werden. Das einfachste Verfahren dazu ist die sgn. z-Transformation:
+
+$$
+z = \frac{x - \bar{x}}{s}
+$$
+
+$$\begin{aligned}
+  & z~...~\text{z-transformierter ('standardisierter') Wert}\\
+  & x~...~\text{beobachteter Wert}\\
+  & \bar{x}~...~\text{Mittelwert}\\
+  & s~...~\text{Standardabweichung}
+\end{aligned}$$
+
+Man erhält dadurch Variablen mit einem **Mittelwert von 0** und einer **Standardabweichung von 1**. Nutzt man diese standardisierten Variablen für die Regression, erhält man **standardisierte Regressionskoeffizienten**, die miteinander **verglichen** (genauer gesagt als partielle Korrelationskoeffizienten auslegt) werden können.
+
+Die Standardisierung von Variablen können wir mit dem Befehl **scale** erzielen:
+
+```{r Standardisierung}
+sel.daten.trans <- sel.daten %>%
+  mutate(across(c("anteil_immun", "tote_100k", "bev_anteil_65plus",
+         "anteil_noaut", "bildung_anteil_hochschule", "nrw19_anteil_fpoe"),scale))
+```
+
+Zur Kontrolle: Die Mittelwerte der so transformierten Variablen sollten bei 0 liegen:
+
+```{r KontrolleStandardisierung}
+# zur Kontrolle: Mittelwert = 0
+sel.daten.trans %>%
+  summarise(across(c("anteil_immun", "tote_100k", "bev_anteil_65plus",
+         "anteil_noaut", "bildung_anteil_hochschule", "nrw19_anteil_fpoe"),mean)) %>%
+  t() %>%
+  knitr::kable()
+```
+
+Ein kleiner Exkurs zur Veranschaulichung der Wirkung einer Standardisierung:
+
+```{r Vergleich Streuungen, message=FALSE, warning=FALSE}
+# Streuung der nicht-standardisierten Variablen abbilden
+vis.data.1 <- sel.daten %>%
+  select(anteil_immun:nrw19_anteil_fpoe) %>%
+  pivot_longer(cols = anteil_immun:nrw19_anteil_fpoe, names_to = "Variable", 
+               values_to = "Messwert")
+
+p1 <- ggplot(vis.data.1, aes(x = Variable, y = Messwert)) +
+  geom_boxplot() +
+  labs(x = "Variablen\n", y = "\nbeobachtete Werte") +
+  theme_gray(base_size = 16) +
+  coord_flip()
+
+# Streuung der standardisierten Variablen darstellen
+vis.data.2 <- sel.daten.trans %>%
+  select(anteil_immun:nrw19_anteil_fpoe) %>%
+  pivot_longer(cols = anteil_immun:nrw19_anteil_fpoe, names_to = "Variable", 
+               values_to = "Messwert")
+
+p2 <- ggplot(vis.data.2, aes(x = Variable, y = Messwert)) +
+  geom_boxplot() +
+  labs(y = "\nz-transf. Werte") +
+  theme_gray(base_size = 16) +
+  theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  coord_flip()
+
+# beide Plots kombinieren damit der Vergleich leichter fällt mit dem grid_extra package
+library(gridExtra)
+grid.arrange(p1, p2, nrow = 1, widths = c(2, 1))
+```
+
+### Beziehungen der Variablen zueinander {#korrel-reg1}
+
+Bevor wir nun das Regressionsmodell befüllen, werfen wir noch einen Blick auf die **Korrelationen** zwischen den erklärenden Variablen.\
+\
+**Warum?**\
+Eine [Annahme linearer Regressionsmodelle](#annahmen) ist, dass **zwischen den erklärenden Variablen keine Abhängigkeiten** bestehen sollen. Das können wir numerisch anhand der **Korrelationskoeffizienten** zwischen den erklärenden Variablen überprüfen. In der Old-School-Variante erreicht man dies beispielsweise anhand des **rcorr** Befehls:
+
+```{r Korrelationen1, message=FALSE}
+# old school: numerisch
+library(Hmisc)
+rcorr(as.matrix(sel.daten[,4:8]))
+```
+
+Etwas hübscher gelingt dies mittels des **GGally-Packages**:
+
+```{r Korrelationen2, message=FALSE, warning=FALSE}
+# etwas hübscher: graphisch mittels GGally
+library(GGally)
+ggpairs(sel.daten, columns = 4:8)
+```
+
+**👉 Eine Daumenregel zur Interpretation:**\
+Korrelationen über 0,8 sind meist problematisch, da sie die Präzision der Koeffizienten negativ beeinflussen würden. In unserem Fall können wir also von keinen problematischen Korrelationen zwischen den erklärenden Variablen ausgehen.
+
+Und damit kommen wir (endlich) zur:
+
+## Die Modellbildung
+
+Wir bilden zunächst ein Modell mit den fünf ausgewählten erklärenden Variablen (vgl. "[Die gedankliche Modellbildung]"):
+
+```{r Regression V1 standardisiert}
+# options(scipen = 999)
+# options(scipen = 0)
+
+lm.v1.trans <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut + bildung_anteil_hochschule + nrw19_anteil_fpoe,
+                  data = sel.daten.trans)
+summary(lm.v1.trans)
+
+```
+
+Wir sehen, dass unser erster Modellversuch ein adjustiertes **R² von 0.2948 also rund 30%** aufweist. Das ist zunächst nicht allzu berauschend, bedenkt man dass 70% der Varianz der Impfquoten durch dieses Modell nicht erklärt werden.
+
+Ein Blick auf die **Regressionskoeffizienten** (Spalte "Estimates") zeigt uns, dass
+
+-   Der Anteil der über 65-Jährigen und der Anteil der HochschulabsolventInnen **positiv**,
+
+-   und die Corona-bezogene Mortalität und der Anteil der Nicht-ÖsterreicherInnen **negativ**
+
+auf die Impfquote einwirken.
+
+Ein Blick auf die Signifikanz der erklärenden Variablen verrät uns darüber hinaus, dass der **FPÖ-Stimmanteil** **nicht signifikant** zur Erklärung der Impfquote beiträgt.
+
+### Ein alternatives Modell {#referenzmodell}
+
+Ausgehend von diesem ersten Modell wollen wir ein verbessertes Modell bilden. Dazu nehmen wir zwei Änderungen vor:
+
+1.  Wir entfernen den nicht signifikanten FPÖ-Stimmanteil als erklärenden Variable:
+
+```{r Regression V1a}
+lm.v1.trans <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut + bildung_anteil_hochschule,
+                  data = sel.daten.trans)
+summary(lm.v1.trans)
+```
+
+Außer einer marginalen Verbesserung der adjustierten R²-Wertes können wir leichte Veränderungen der Koeffizienten beobachten.
+
+2.  Als Experiment wollen wir auch noch den Bezirk Schwaz in Tirol (bez_id = 709) aus dem Sample entfernen.\
+    **Warum?**\
+    Dieser Bezirk wurde vor allen anderen Bezirken im März und April 2021 einer gezielten Impfkampagne unterzogen. Was uns zu folgender These verleiten kann: Durch diese Impfkampagne wurde die messbare Impfquote nach oben verschoben.
+
+```{r Regression V2 standardisiert}
+
+# Schwaz aus Modellbildung ausschließen
+lmv2noSchwaz <- sel.daten.trans %>%
+  filter(bez_id != 709)
+
+lm.v2.trans <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut + bildung_anteil_hochschule, 
+                  data = lmv2noSchwaz)
+summary(lm.v2.trans)
+```
+
+Die Steigerung des adjustierten R²-Wertes auf rund 33% kann als ein erster Beleg für diese These gewertet werden.
+
+## Überprüfung der Modellannahmen {#annahmen}
+
+Nun gilt es für das gefundene Modell nachzuweisen, dass dieses die grundsätzlichen Modellannahmen linearer Regression nicht verletzt. Diese Annahmen sind:
+
+1.  Modell ist ausreichend spezifiziert
+
+    -   Linearer Zusammenhang gegeben
+    -   Relevante erklärende Variablen eingebunden
+    -   Anzahl Koeffizienten \< Anzahl Beobachtungen
+
+2.  Erklärende Variablen = unkorreliert (Multikollinearität)
+
+3.  Erwartungswert der Residuen = 0
+
+4.  Residuen = normalverteilt
+
+5.  Residuen haben konstante Varianz (Homoskedastiziät)
+
+6.  Keine Korrelation zwischen erklärenden Variablen und Residuen
+
+7.  Residuen sind unkorreliert zu Beobachtungen (Autokorrelation)
+
+### Prüfung des linearen Zusammenhangs
+
+Der einfachste Weg hierzu ist ein graphischer Vergleich des **Zusammenhangs zwischen der zu erklärenden und den erklärenden Variablen**:
+
+```{r paarweiser Zusammenhang, message=FALSE}
+ggpairs(sel.daten, c(3:8))
+```
+
+Der ersten Spalte dieser Matrix entnehmen wird, dass keine der erklärenden Variablen einen klar erkennbaren exponentiellen oder einen sonstigen nicht-linearen Zusammenhang zur Impfquote aufweist.
+
+Ein weitere oftmals genutzte Möglichkeit bietet der sgn. **"Residuals vs. Fitted"-Plot**:
+
+```{r fitted zu residuals}
+plot(lm.v2.trans, 1, labels.id = sel.daten$bez_txt)
+```
+
+Bei der **Gegenüberstellung** der durch das Modell **vorhergesagten Werte ("Fitted values")** und den dabei erzeugten Abweichungen von den **beobachteten Werten ("Residuals")** sollte
+
+a.  sich **kein klares Muster** in der Punktverteilung erkennen lassen und
+b.  die rote **Regressionslinie** im Idealfall der **Null-Linie** entsprechen.
+
+In unserem Fall sind beide Bedingungen noch hinreichend gut erfüllt. Ein linearer Zusammenhang kann damit als hwst. gegeben angesehen werden.
+
+Sollte sich im "Residuals vs. Fitted"-Plot ein klar nicht-linearer Zusammenhang zeigen, kann eine Transformation der Ausgangsdaten (beispielsweise durch Logarithmieren) ggf. einen linearen Zusammenhang bewirken.
+
+### Prüfung der Unabhängigkeit der erklärenden Variablen ("Multikollinearität")
+
+Wie bereits zu Beginn erwähnt, sollen die erklärenden Variablen voneinander unabhängig sein. Dies kann am einfachsten über die paarweise Korrelationen abgeklärt werden:
+
+```{r paarweise Korreltationen zwischen erklärenden Variablen, message=FALSE}
+ggpairs(sel.daten, columns = 4:8)
+```
+
+Anhand der bereits bekannten **Daumenregel "Keine Korrelation größer als 0,8"** können wir keine problematischen Korrelationen feststellen.
+
+Generell kann das Auffüllen von Modellen mit vielen korrelierten Variablen zu einem "**Overfitting**" führen. Dabei kann das overfittete Modell zwar die beobachtete Stichprobe an Werten gut abbilden, bei einer Erweiterung der Stichprobe besteht aber die Gefahr einer **sinkenden Erklärungskraft**.
+
+Trotz aller Freude an multivariaten Verfahren sollte ein **"lean model"** - also ein Modell mit sparsamen Variableneinsatz - stets das Ziel der Analyse sein. Was solche "lean models" mit Rasiermessern zu tun haben, kann [::hier::](https://de.wikipedia.org/wiki/Ockhams_Rasiermesser) nachgelesen werden 😉
+
+### Prüfung der Normalverteilung der Residuen
+
+Da die Residuen ja Abbild einer zufälligen Streuung sein sollten, müssten sie einer Normalverteilung folgen. Auch hier bietet R einen passenden Standard-Plot für lineare Modelle: Einen sgn. **"Q-Q Plot"**
+
+```{r Normalverteilung Residuen}
+plot(lm.v2.trans, 2, labels.id = sel.daten$bez_txt)
+```
+
+In diesem Plot werden die Residuen nach ihren Quantilszugehörigkeiten angeordnet. Die dabei entstehenden Punkte sollte bei vorliegender **Normalverteilung auf der Gleichverteilungsgeraden** zu liegen kommen. Abweichungen von dieser Geraden deuten auf eine Abweichung von der Normalverteilung hin.
+
+In unserem Fall schlagen einige wenige Ausreißer nach oben und unten aus. In Summe entspricht die Verteilung jedoch hinreichend einer Normalverteilung. Dafür spricht auch ein hinreichend nahe **Null** liegender **Mittelwert der Residuen**:
+
+```{r Mittelwert Residuen}
+mean(residuals(lm.v2.trans))
+```
+
+### Prüfung der Konstanz der Varianz der Residuen ("Homoskedastizität")
+
+Eine weitere Annahme linearer Regressionsmodelle besagt, dass die **Residuen über die unabhängigen Variablen** (und damit auch über die abhängige Variable) hinweg **gleichverteilt** sein sollen. Diese Annahme sichert die **Homogenität in den Varianzen** ("Homoskedastizität") und damit letztlich, dass Messfehler bei einzelnen unabhängigen Variablen nicht Eingang in die Modellierung finden und zur Verzerrung der Regressionskoeffizienten beitragen.
+
+Auch hierzu bietet R einen passenden Standard-Plot für lineare Modelle:
+
+```{r Test Homoskedastizität}
+plot(lm.v2.trans, 3, labels.id = sel.daten$bez_txt)
+```
+
+Im Idealfall zeigt die Verteilung der **Varianzen** (Wurzel der "Standardized residuals") über die **prognostizierten Werte** ("Fitted values") eine annähernd **horizontale Verteilungslinie** mit gleichverteilten Punkten.
+
+Aufgrund zweier Ausreißer im oberen Wertspektrum der fitted values erfüllt unser Modell dieses Kriterium nur knapp. Bei noch weiter streuenden Varianzen bieten sich üblicherweise zwei Möglichkeiten an:
+
+1.  Über eine **Transformation der Ausgangsdaten** (beispielsweise ein Logarithmieren) kann eine homogenere Verteilung der Varianzen erzielt werden. In unserem Fall ist dies jedoch nicht (direkt) möglich, da auch negative Werte der zu erklärenden Variable möglich sind.
+2.  Oftmals kann durch eine **Bereinigung** der Daten um **Ausreißer** oder eine Segmentierung der Daten in zwei oder mehr Subgruppen eine homogenere Verteilung der Varianzen erzielt werden.
+
+**Exkurs: Ausreißern auf der Spur**
+
+So **Ausreißer** in unserem Modell **keine Rolle** spielen, müsste in Modell mit einer g**etrimmten Wertverteilung** der Ausgangsdaten (zB 95% oder 97,5%) zu **ähnlichen Koeffizienten** und Erklärungsgehalt führen. In unserem Fall trimmen wir die Variable mit den meisten Ausreißern (vgl. [Ein Blick auf die gewählten Variablen]) - den Anteil der HochschulabsolventInnen um die obersten 2,5% der Werte:
+
+```{r Regression v2 getrimmt}
+trimmed.data <- lmv2noSchwaz %>%
+  filter(bildung_anteil_hochschule < quantile(bildung_anteil_hochschule, 0.975))
+
+# Vergleich der Streuungen vor und nach der Trimmung
+vis.min <- min(lmv2noSchwaz$bildung_anteil_hochschule)
+vis.max <- max(lmv2noSchwaz$bildung_anteil_hochschule)
+
+p3 <- ggplot(lmv2noSchwaz, aes(x = bildung_anteil_hochschule, y = "ungetrimmt")) +
+  geom_boxplot() +
+  labs(x = "Ausprägungen bildung_anteil_hochschule\n", y = "") +
+  xlim(vis.min, vis.max) +
+  theme_gray() +
+  coord_flip()
+p4 <- ggplot(trimmed.data, aes(x = bildung_anteil_hochschule, y = "getrimmt (97,5%)")) +
+  geom_boxplot() +
+  xlim(vis.min, vis.max) +
+  labs(x = "", y = "") +
+  coord_flip()
+# beide Plots kombinieren damit der Vergleich leichter fällt mit dem grid_extra package
+grid.arrange(p3, p4, nrow = 1)
+
+# Regressionsmodell V2 mit getrimmten Ausgangswerten berechnen
+lm.v2.trans.trimmed <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut + bildung_anteil_hochschule, 
+                  data = trimmed.data)
+summary(lm.v2.trans.trimmed)
+summary(lm.v2.trans)
+```
+
+Im direkten Vergleich der getrimmten mit der ungetrimmten Modellvariante sehen wir nur geringe Unterschiede bei den Koeffizienten sowie beim Erklärungsgehalt (R²-Wert). Wir können daraus schließen, dass Ausreißer unsere Modellparameter nur gering verzerren.
+
+Der Wirkung von Ausreißern - also extremen Beobachtungen - kann auch mittels **eigener Kennzahlen** wie der **Cookschen Distanz** oder der **Leverage** nachgegangen werden:
+
+Anhand der **Cookschen Distanz** ("Cook's distance") kann auf die Veränderungen im Modellergebnis durch das Weglassen der n-ten Beobachtung geschlossen werden. Je größer dieser Wert ausfällt, umso mehr Impact hat die Beobachtung auf die Modellierung. Als Daumenregel sollte dieser Wert deutlich unter 1, idealerweise auch **klar unter 0,5** liegen.
+
+```{r Cook}
+plot(lm.v2.trans, 4, labels.id = sel.daten$bez_txt)
+```
+
+In unserem Fall trifft dies auf alle Beobachtungen zu.
+
+Die Abbildung **"Residuals vs Leverage"** vereinigt zwei interessante Indikatoren:
+
+-   Die **standardisierten Residuen**: Berechnet als die durch den Standardfehler dividierten Residuen. Als Daumenregel sollten diese **nicht größer als das 3** (James et al. 2004) ausfallen.
+
+-   Die "**Leverage**": Die auch als "hat values" bezeichneten Werte messen den Einfluss einzelner Werte auf die Regressionskoeffizienten. Als Daumenregel sollten diese Werte **kleiner als 2(p + 1)/n** ausfallen. Dabei steht
+
+    -   p für die Anzahl der erklärenden Variablen und
+    -   n für die Anzahl der Beobachtungen
+
+```{r Leverage}
+plot(lm.v2.trans, 5, labels.id = sel.daten$bez_txt)
+```
+
+In unserem Fall liegt diese Schwelle also bei 2\*(4 + 1)/93 = **0,11** welche nur durch wenige Ausreißer übertroffen wird. In der Zusammenschau aus standardisierten Residuen und der Leverage können jedoch starke Verzerrungen des Regressionsmodells ausgeschlossen werden.
+
+### Prüfung auf Autokorrelation
+
+Eine weitere Annahme linearer Modelle ist die **Unabhängigkeit der Residuen von der Reihenfolge der Beobachtungen.** Dieser Effekt ist vor allem bei Zeitreihendaten zu beachten. Ist diese Unabhängigkeit nicht gegeben, spricht man von "**Autokorrelation**", welche meist auf systematische Messfehler (z.B. wachsende Unaufmerksamkeit) zurückgeführt werden kann. Autokorrelation führt in linearen Modellen zu einer Verzerrung der Regressionskoeffizienten.
+
+Zur Überprüfung werden die **Residuen über die Beobachtungen** aufgetragen:
+
+```{r Test Autokorrelation}
+ggplot(lmv2noSchwaz, aes(x=(1:length(bez_id)), y=residuals(lm.v2.trans))) +
+  geom_point() +
+  geom_smooth(method='lm', formula= y~x, se=F, color="red") +
+  labs(x = "\nBeobachtungen", y = "Residuen\n") +
+  theme_gray(base_size = 18)
+```
+
+Wie zu erwarten (wir nutzen keine Zeitreihendaten) sind die **Residuen über die Beobachtungen gleichverteilt** und die (rote) Regressionsgerade der Residuen entspricht der **Null-Linie**. Es liegen also keine Indizien für Autokorrelation vor.
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, ...**
+
+-   daß die Bildung von Regressionsmodellen meist ein **iterativer Prozess** ist.
+-   daß man in diesem Prozess viel Informationen die **kausale Abhängigkeiten** zwischen Variablen überprüfen kann.
+-   daß ein Regressionsmodell zwar in sich **konsistent**, aber aufgrund der gewählten Variablen nur einen **geringen Erklärungswert** besitzen kann.
+
+![](images/disappointed.gif){.videoframe width="210"}
+
+**Aber Moment 🤓,** da war doch noch etwas ...

@@ -1,0 +1,54 @@
+P {
+  text-align: justify;
+}
+
+.center {
+  text-align: center;
+}
+
+p.caption {
+  font-style: italic;
+  margin-bottom: 2em !important;
+}
+
+a {
+  color: #3B9AB2 !important;
+  font-weight:bold !important;
+}
+
+h1 {
+	color: #3B9AB2;
+	border-bottom: 2px solid #F21A00 !important;
+	display: absolute;
+}
+
+h2, h3 {
+	color: #E1AF00;
+}
+
+pre {
+  border-radius: 5px;
+  border: 1px solid #78B7C5 !important;
+  word-break: normal;
+  word-wrap: normal;
+}
+
+pre.sourceCode.r {
+  border-radius: 5px;
+  background-color: #EBCC2A !important;
+  font-weight: bolder;
+  border: 1px solid #3B9AB2 !important;
+}
+
+blockquote {
+  margin: 2em 0em 1em !important;
+}
+
+hr {
+  height: 2px !important;
+  background-color: #F21A00 !important;
+}
+
+.videoframe {
+	border: 2px solid #78B7C5 !important;
+}

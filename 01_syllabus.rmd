@@ -1,0 +1,115 @@
+# Ouvertüre (aka "Syllabus") {#syllabus}
+
+1955 legte John Langshaw Austin die Grundlagen für die Theorie der Sprechakte. Sprache fungiert dabei als Brücke zwischen den Gegenständen und Prozessen der Welt und den ihnen beigemessenen Bedeutungen. Zugleich dient Sprache dazu Sprechhandlungen -- Fragen, Gebote oder Bitten -- zu setzen, welche wiederum bestimmte Wirkungen bei der Hörer- und/oder Leserschaft hervorrufen sollen.
+
+Der Konnex zu einer Lehrveranstaltung zu quantitativen Methoden ist ein bemerkenswert kurzer: Einerseits stehen quantitative Daten niemals „für sich", sondern werden stets interpretiert, damit letztlich versprachlicht. Auf der anderen Seite folgt die humangeographische Nutzung von Daten den von Austin beschriebenen Stufen: Wir erzeugen und interpretieren empirische Daten zu geographischen Erkenntnisobjekten anhand methodologischer Grundsätze. Diese Zahlen bilden damit die Brücke zwischen dem Erkenntnisobjekt und seiner Bedeutung. Danach nutzen wir diese Daten für wissenschaftliche Aussagen über geographische Erkenntnisobjekte, mit dem wir Effekte -- üblicherweise Überzeugung -- bewirken wollen. Kurz und gut: Eine Diskussion quantitativer Forschungsmethoden kann immer auch als ein Nachdenken über „Doing Things with Numbers" verstanden werden.
+
+Dieses Nachdenken über die quantitative Konstruktion geographischer Empirie steht im Zentrum der Lehrveranstaltung. Als Einstieg werden ausgewählte geographische Forschungsprozesse und deren Zielsetzungen rekapituliert. Nach der Behandlung von Gütekriterien quantitativen Forschens werden ausgewählte strukturprüfende (beispielsweise multiple Regression) und -entdeckende multivariate Verfahren (beispielsweise Cluster- und Faktorenanalyse) Regressionsanalyse anhand praktischer Beispiele näher vorgestellt. Im zweiten Teil der Lehrveranstaltung rückt mit der quantitativen Inhaltsanalyse die Analyse qualitativen Daten -- Text, Bild und Video -- in den Mittelpunkt des Interesses. Anhand praktischer Beispiele werden dazu unterschiedliche Strategien der Datenbeschaffung, -vorbereitung und -auswertung vorgestellt und erprobt.
+
+## Lernziele
+
+Die Lehrveranstaltung befähigt Sie,
+
+1.  die Funktion quantitativer Methoden in unterschiedlichen Forschungsprozessen zu erklären;
+2.  die Bedeutsamkeit von Skalenniveaus für die Analyse quantitativer Daten zu erklären;
+3.  selbständig Sekundärdaten zu validieren und für eine weiterführende Analyse auf- und vorzubereiten;
+4.  Unterschiede bezüglich Voraussetzungen, Vorbereitung, Umsetzung und Nachbereitung zwischen ausgewählten multivariaten und quantitativ-inhaltsanalytischen Verfahren zu erklären;
+5.  die Eignung unterschiedlicher multivariater und quantitativ-inhaltsanalytischer Verfahren zur Beantwortung von Untersuchungsfragen zu beurteilen;
+6.  selbständig multivariate sowie quantitativ-inhaltsanalytische Analysen vorzubereiten und diese umzusetzen.
+
+## Zeitplanung
+
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| EH | Tag        | Uhrzeit & Ort  | Thema                                                                                                    |
++====+============+================+==========================================================================================================+
+| 1  | 07.10.2021 | 08.30-09.30\   | **Vorbesprechung**                                                                                       |
+|    |            | OLAT           |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 2  | 14.10.2021 | 08.30-10.45\   | **Intro:**\                                                                                              |
+|    |            | EDV Geographie | Forschungsprozesse, Bedeutung multivariater Verfahren und quant. Inhaltsanalyse, Überblick auf Verfahren |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 3  | 21.10.2021 | 08.30-10.45\   | **Aufwärmrunde 1:**\                                                                                     |
+|    |            | EDV Geographie | Messen & Skalen, Primär- & Sekundärdaten, Datenhandling                                                  |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 4  | 28.10.2021 | 08.30-10.45\   | **Aufwärmrunde 2:**\                                                                                     |
+|    |            | EDV Geographie | Datenhandling & Manipulation                                                                             |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 5  | 04.11.2021 | 08.30-10.45\   | **Strukturprüfende Verfahren -- Regression 1**                                                           |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 6  | 11.11.2021 | 08.30-10.45\   | **Strukturprüfende Verfahren -- Regression 2**                                                           |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 7  | 18.11.2021 | 08.30-10.45\   | Puffereinheit                                                                                            |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 8  | 25.11.2021 | 08.30-10.45\   | **Strukturentdeckende Verfahren -- Clusterung 1**                                                        |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 9  | 09.12.2021 | 08.30-10.45\   | **Strukturentdeckende Verfahren -- Clusterung 2**                                                        |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 10 | 16.12.2021 | 08.30-10.45\   | Puffereinheit                                                                                            |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 11 | 13.01.2022 | 08.30-10.45\   | **Quantitative Inhaltsanalyse - die Basics:**\                                                           |
+|    |            | EDV Geographie | Frequenzanalysen, Kollokationen, n-grams etc.                                                            |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 12 | 20.01.2022 | 08.30-10.45\   | **Quantitative Inhaltsanalyse 1:** Klimawandel auf Twitter                                               |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 13 | 27.01.2022 | 08.30-10.45\   | **Quantitative Inhaltsanalyse 2:** Klimawandel auf Twitter                                               |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+| 14 | 03.02.2022 | 08.30-10.45\   | Puffereinheit                                                                                            |
+|    |            | EDV Geographie |                                                                                                          |
++----+------------+----------------+----------------------------------------------------------------------------------------------------------+
+
+## Rulez of the Game
+
+-   VU mit **Anwesenheitspflicht**
+-   Selber lesen macht satt!
+-   **Deadlines** sind Deadlines sind Deadlines ...\
+    👉 „Kane G´schichtln"
+
+## Bewertungskriterien
+
+-   Übungsarbeiten: 65 %
+-   Allgemeine Mitarbeit: 35 %
+
+## Formelles zu den Übungsarbeiten (\@Homes)
+
+Im Rahmen der VU sind sämtliche bisher behandelten Anforderungen an wissenschaftliches Arbeiten zu beachten. Bitte ziehen Sie in Zweifelsfällen die Unterlagen aus den LVAs zur **Einführung in das wissenschaftliche Arbeiten** heran.
+
+Folgende Kriterien sind bei der Erstellung schriftlicher Ausarbeitungen besonders zu beachten:
+
+-   Vollständiges Titelblatt (LVA-Nr. & Titel, Semester, Titel der Arbeit, Namen und Matrikelnummern etc.)
+-   Formal korrektes Inhaltsverzeichnis inkl. Seitenzahlen und Seitennummerierung auf allen Seiten
+-   Integration grundlegender Literatur zum Thema in die eigene Argumentation
+-   Korrektes, einheitliches Zitieren
+-   Wissenschaftlicher, gendergerechter Schreibstil
+-   Kontrolliert die Arbeit vor der Abgabe auf Rectschreipfähler und Zeichensetzung
+-   Korrektes Literaturverzeichnis gemäß der UE „Einführung in das wissenschaftliche Arbeiten"
+
+## Empfehlung zur eingesetzten Software
+
+Zur Vorbereitung auf die praktischen Übungseinheiten empfiehlt es sich, die Software R und RStudio lokal zu installieren. Eine gelungene Anleitung dazu bieten die [R-Psychos](https://r-intro.tadaa-data.de/book/) Lukas Burk und Tobias Anton:
+
+<https://r-intro.tadaa-data.de/book/installation.html>
+
+> **Tipp:** Neugierige finden dort auch eine kurze Erklärung wer oder was R denn überhaupt ist.
+
+## Ausgewählte Hilfestellungen zum Thema R und RStudio
+
+-   Lukas Burks und Tobias Antons **"R für Psychos"**: <https://r-intro.tadaa-data.de/book/>
+-   Walter Grubers **"Reinführung in RStudio"** (= bester Titel ever): <https://wgruber.github.io/R-Intro>
+-   Hadleyx Wickhams und Garrett Grolemungs **"R for Data Science"**: <https://r4ds.had.co.nz>
+-   Yan Holtzs **"R Graph Gallery"**: <https://www.r-graph-gallery.com>
+
+## Literatur zur Lehrveranstaltung
+
+-   Backhaus, K.; Erichson, B.; Plinke, W.; Weiber, R. (2018): Multivariate Analysemethoden. Eine anwendungsorientierte Einführung. 15. Aufl. -- Berlin, Heidelberg, Springer Gabler.
+-   Benoit, Ken (2020): Text as Data: An Overview. In: R. J. Franzese und L. Curini (Hg.): The SAGE Handbook of Research Methods in Political Science and International Relations. London: Sage, S. 461--497. Online verfügbar unter <https://kenbenoit.net/pdfs/CURINI_FRANZESE_Ch26.pdf>
+-   Denis, D. J. (2020): Univariate, bivariate, and multivariate statistics using R - Quantitative tools for data analysis and data science. Hoboken, NJ, Wiley.
+-   Kuckartz, U. (2014): Mixed Methods - Methodologie, Forschungsdesigns und Analyseverfahren. Wiesbaden: Springer.
+-   Silge, Julia; Robinson, David (2017): Text mining with R. A tidy approach. Sebastopol, CA: O'Reilly Media. Online verfügbar unter <https://www.tidytextmining.com/index.html>

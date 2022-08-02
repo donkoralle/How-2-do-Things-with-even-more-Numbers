@@ -1,0 +1,336 @@
+# Multiple Regression II: Qualitative Variablen einbinden {#reg2}
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+In dieser Einheit wird die Nutzung qualitativer - also nominal oder ordinal skalierter - Variablen in Regressionsmodellen anhand des Beispiel zur Erklärung der bezirksweisen Impfquoten aus Einheit \@ref(reg1) behandelt.
+
+```{r echo=FALSE, purl=FALSE}
+# myScriptname <- tools::file_path_sans_ext(tail(strsplit(rstudioapi::getSourceEditorContext()$path, "/")[[1]], 1))
+myScriptname <- "06_multireg_II"
+
+knitr::asis_output(paste(
+  "<p><strong>tl;dr: </strong>",
+  "<a href=\"https://kamihoeferl.at/lehre/vu_sozwiss_2/",
+  myScriptname,
+  ".R\" type=\"application/octet-stream\">Her mit dem Code!</a></p>",
+  sep = ""))
+```
+
+------------------------------------------------------------------------
+
+## Ouvertüre
+
+Wie in Einheit \@ref(reg1) nutzen wir erneut den Datensatz zu den bezirksweiten Impfquoten (Stand 24.10.21). In diesem Datensatz wurden mehrere Teildatensätze miteinander verknüpft. Eine genaue Beschreibung dieser Teildatensätze findet sich in Kapitel \@ref(ouvert-reg1). Diese Teildatensätze wurden in einer Excel-Datei gesammelt, mittels Aggregation auf die einheitliche Bezugsebene der politischen Bezirke gebracht und im Tabellenblatt "ex" miteinander verknüpft.
+
+[**🚩 Die Excel-Datei kann hier heruntergeladen werden 🚩**](data/corona_bez_regression_v1.xlsx)
+
+> **👉 Anmerkung**: Wir gehen in dieser Einheit von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+## Gedankliche Modellbildung
+
+In der vorigen Einheit konnten wir in Kapitel \@ref(map-impfquoten) einen ersten Überblick auf die räumliche Verteilung der bezirksweisen Impfquoten gewinnen:
+
+![Anteil der Immunisierten in den österreichischen Bezirken (Stand: Oktober 2021)](images/choropleth2-1.png)
+
+Dabei sehen wir, dass vor allem die Bundesländer Salzburg, Oberösterreich und Kärnten mit niedrigen und das Burgenland sowie Teile Niederösterreichs und der Steiermark mit hohe Impfquoten aufweisen. Wir wollen daher **überprüfen**, ob die **Hinzunahme der "Bundeslandzugehörigkeit"** unser Regressionsmodell (vgl. Kapitel \@ref(reg1))
+
+a\) hinsichtlich der **Varianzaufklärung** verbessert;
+
+b\) und zu Veränderungen in den **Regressionsparametern** führt.
+
+Folgender **Workflow** bietet sich dazu an
+
+1.  Wir importieren die *Ausgangsdaten*;
+
+2.  ermitteln die *Bundeslandzugehörigkeit* der Bezirke;
+
+3.  ergänzen unser *Regressionsmodell* um diese Zugehörigkeit;
+
+4.  und prüfen, ob wir damit die *Annahmen* linearer Modelle erfüllen.
+
+## Daten importieren
+
+Über das **readxl-Package** laden wir zunächst die Daten aus dem Tabellenblatt "ex":
+
+```{r, message=FALSE, warning=FALSE, results="hide"}
+library(readxl)     # Excel-Dateien lesen
+library(tidyverse)  # https://www.tidyverse.org/packages/
+
+daten <- read_excel("data/corona_bez_regression_v1.xlsx", sheet = "ex")
+```
+
+Damit erhalten wir den bekannten Datensatz zu den bezirksweisen Impfquoten zum Stand Oktober 2021:
+
+```{r}
+head(daten)
+```
+
+## Die Bundeslandzugehörigkeit der Bezirke ermitteln
+
+Zu welchem Bundesland ein Bezirk gehört, können wir in zwei Schritten ermitteln:
+
+1.  Zunächst extrahieren wir aus der Bezirkskennzahl "bez_id" das jeweilige **Bundesland**. Wir erinnern uns: Die [erste Stelle der Bezirkskennzahl](http://www.statistik.at/web_de/klassifikationen/regionale_gliederungen/politische_bezirke/index.html) steht für das jeweilige Bundesland.
+
+```{r}
+daten <- daten %>%
+  mutate(bld = floor(bez_id/100))
+```
+
+2.  Um das nominale Skalenniveau dieser Bundeslandzugehörigkeit auch noch korrekt abzubilden, überführen wir die Variable "bld" in einen **Faktor**. Um dabei zu wissen, welche Zahl für welches Bundesland steht: Die Verwaltungseinheiten werden dazu in Österreich immer [**alphabetisch aufsteigend** sortiert und nummeriert](http://www.statistik.at/web_de/klassifikationen/regionale_gliederungen/politische_bezirke/index.html).
+
+```{r}
+daten <- daten %>%
+  mutate(bld = factor(bld, labels = c("Bgld.", "Ktn.", "NÖ", "OÖ",
+                                      "Sbg.", "Stmk.", "T", "Vbg.", "W")))
+head(daten$bld)
+```
+
+Damit bleibt uns nur mehr, den Datensatz für die weitere Analyse etwas **auszudünnen** - also nicht benötigte Variablen und Records (vgl. Kapitel \@ref(referenzmodell)) zu entfernen:
+
+```{r}
+sel_daten <- daten %>%
+  filter(bez_id <= 900 & bez_id != 709) %>%
+  select(bez_id, bez_txt, bld, anteil_immun, tote_100k, bev_anteil_65plus,
+         anteil_noaut, bildung_anteil_hochschule, nrw19_anteil_fpoe)
+```
+
+## Qualitative Variablen in Regressionsmodellen nutzen {#qualVaria}
+
+Prinzipiell können qualitative - also nominal und ordinal skalierte - Variablen in Regressionsmodellen berücksichtigt werden. Man sollte aber folgende zwei Punkte nicht aus den Augen verlieren:
+
+-   **Regressionsanalyse** misst den Einfluss einer oder mehrerer quantitativer unabhängiger auf eine quantitative abhängige Variable (vgl. Kapitel 1 in \@Backhaus2018). Mit ihr kann beispielsweise der Einfluss der Körpergröße auf das Gewicht einer Person untersucht werden.\
+    Qualitative Variablen können als sgn. **Dummy-Variablen** berücksichtigt werden, sollten jedoch nicht den überwiegenden Teil der unabhängigen Variablen stellen.
+-   **Varianzanalyse** misst den Einfluss qualitativer unabhängiger Variablen auf eine quantitative abhängige Variable (vgl. Kapitel 3 in \@Backhaus2018). Mit ihr kann beispielsweise der Einfluss des Geschlechts auf Einkommen einer Person untersucht werden. Analog zur Regressionsanalyse können dabei auch quantitative Variablen (als sgn. "Kovariaten") berücksichtigt werden; sie sollten aber nicht den überwiegenden Teil der unabhängigen Variablen stellen.
+
+Wir entscheiden uns, das bestehende Regressionsmodell zu erweitern und müssen dafür die Bundeslandzugehörigkeit in sgn. **Dummy-Codes** überführen. Dazu wird jede Merkmalsausprägung D einer qualitativen Variable in einer logischen Variable (binär) abgebildet:
+
+$$
+D=\begin{cases}
+    1 & \text{Merkmal vorhanden} \\
+    0 & \text{Merkmal nicht vorhanden}
+  \end{cases}
+$$
+
+Glücklicherweise überführt R Faktoren in Regressionsmodellen automatisch in Dummy-Codes.
+
+> **📚 Exkurs: Dummy-Codes from the inside**
+>
+> Um diese Dummy-Codes etwas besser zu verstehen, werfen wir zunächst einen Blick auf die Levels des Faktors Bundesland:
+
+```{r Levels bld}
+levels(sel_daten$bld)
+```
+
+> Diese neun Merkmalsausprägungen werden von R automatisch in n-1 (sprich: Enminuseeeeins mit n = Anzahl der Faktor-Levels), also 8 Dummy-Variablen überführt:
+
+```{r Auto-Dummy-Codes anzeigen}
+model.matrix(~ bld, sel_daten) %>%  # Dummy-Coding liefert ...
+  .[,-1] %>%        # ... eine Matrix ...
+  as_tibble() %>%   # ... die ein einen Tibble überführt wird ...
+  bind_cols(sel_daten[c("bez_txt", "bld")], .) %>%  # ... der noch einleitende Spalten bekommt
+  head()
+```
+
+> Am Bezirk Eisenstadt (Stadt) sehen wir, dass alle acht vergebenen Dummy-Codes 0 entsprechen.
+>
+> **🤔 Kann das stimmen?**
+>
+> Jep, da wir ja nur n-1 Dummy-Codes nutzen um die Bundeslandzugehörigkeiten der Bezirke abzubilden. Im Fall von Eisenstadt (Stadt) heißt das, dass sich R dazu entschieden hat, das erste Level des Faktors "bld" (= "Bgld.") als [Linearkombination](https://de.wikipedia.org/wiki/Linearkombination) der restlichen acht Levels dieses Faktors zu interpretieren. Die Logik dahinter: Wenn ein Bezirk nicht zu den acht Bundesländer Kärnten bis Wien gehört, muss er zwangsweise ein burgenländischer Bezirk sein.\
+> Inhaltlich spielt es keine Rolle, welches Level eines Faktors als Linearkombination interpretiert wird. Jedoch: Bei der Interpretation der Regressionsparameter ist es wichtig zu wissen, welches Level eines Faktors als Linearkombination abgebildet wurde. Mehr dazu gleich ...
+
+## Der Einfluß des Bundeslandes auf die Impfquote
+
+Kommen wir nun zur eigentlichen Modellbildung. Dazu werden wir **folgende Schritte** durchlaufen:
+
+1.  Wir *standardisieren* die metrischen Variablen in unserem Datensatz, um die Vergleichbarkeit der Regressionsparameter sicherzustellen;
+2.  Wir *reproduzieren* das in Einheit \@ref(reg1) optimierte *Regressionsmodell (lm0)*, um Vergleichswerte zur Varianzaufklärung und der Regressionsparameter zu erhalten ;
+3.  Wir bilden ein *neues Regressionsmodell (lm1)*, das die Bundeslandzugehörigkeit der Bezirke berücksichtigt;
+4.  *optimieren* dieses (lm2 & lm3);
+5.  und *vergleichen* dieses neue Modell mit dem im Schritt 2 ermittelten Referenzmodell (aus Einheit \@ref(reg1)).
+
+### Standardisieren der metrischen Variablen
+
+Analog zu Kapitel \@ref(ztrans) nutzen wir hierzu eine Z-Transformation:
+
+```{r Vars standardisieren}
+sel_daten_trans <- sel_daten %>%
+  mutate(across(c("anteil_immun", "tote_100k", "bev_anteil_65plus",
+         "anteil_noaut", "bildung_anteil_hochschule", "nrw19_anteil_fpoe"),scale))
+```
+
+### Reproduktion unseres Referenzmodells aus Einheit \@ref(reg1)
+
+Dazu greifen wir auf das in Kapitel \@ref(referenzmodell) formulierte Modell zurück:
+
+```{r lm0 ohne bld}
+lm0 <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut 
+          + bildung_anteil_hochschule, data = sel_daten_trans)
+summary(lm0)
+```
+
+### Erweiterung des Modells um die Bundeslandzugehörigkeit der Bezirke
+
+Da R die **Dummy-Codierung des Faktors bld** automatisch vornimmt, können wir diesen einfach zur Modellgleichung hinzufügen:
+
+```{r lm1 mit bld und noSZ}
+lm1 <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus + anteil_noaut 
+          + bildung_anteil_hochschule + bld, data = sel_daten_trans)
+summary(lm1)
+```
+
+**🤔 Was sehen wir hier?**
+
+Vergleichen wir zunächst einmal die **Varianzaufklärung** unserer beiden Modelle lm0 und lm1:
+
+```{r vergleichRquad}
+cbind(c("lm0", "lm1"), c(summary(lm0)$adj.r.squared, summary(lm1)$adj.r.squared))
+```
+
+Die Hinzunahme der Bundeslandzugehörigkeit hat also zu einer Verdoppelung der Varianzaufklärung geführt. Mit knapp 63% Varianzaufklärung liegt unser Modell nicht schlecht (klar über 50%), wenn auch noch deutlich Luft nach oben gegeben ist.
+
+Kommen wir zu den **Regressionskoeffizienten**:
+
+```{r coeffPlot}
+coeff_lm1 <- as_tibble(summary(lm1)$coefficients, rownames = "erklaerende") %>%
+  janitor::clean_names() %>%    # Spaltennamen bereinigen
+  mutate(erklaerende = factor(erklaerende),   # in Faktor überführen für Diagramm
+         erklaerende = forcats::fct_reorder(erklaerende, estimate),  #Sortieren für Diagramm
+         vis_sig = cut(pr_t, breaks = c(0, 0.05, 1), 
+                       labels = c("signifikant (p<=0,05)", "nicht signifikant (p>0,05)")))  # Signifikanz als Faktor für Diagramm
+
+ggplot(coeff_lm1, aes(x = erklaerende, y = estimate, fill = vis_sig)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(x = "Erklärende Variablen\n",
+       y = "\nRegressionskoeffizienten",
+       fill = "Signifikanz")
+```
+
+Bei den metrischen Variablen sehen wir, dass der Anteil der HochschulabsolventInnen und der Anteil der über 65-Jährigen signifikant positiv auf die Impfquote wirken. Die Mortalität und der Anteil der Nicht-ÖsterreicherInnen würden negativ auf die Impfquote einwirken, wenn sie denn signifikant wären. Bei unserer nominalen Bundeslandzugehörigkeit sehen wir, dass nur der Intercept - also die Konstante der Regressionsgleichung - klar positiv auf die Impfquote einwirkt. Und hier knüpfen wir nochmals an die vorherigen Ausführungen aus Kapitel \@ref(qualVaria) an: Dieser Intercept steht inhaltlich für die Linearkombination der acht verwendeten Dummy-Codes, also für das Bundesland Burgenland. Die Lage eines Bezirkes im Burgenland trägt also signifikant zu einer Erhöhung der Impfquote. Alle restlichen Bundesländer weisen negative Regressionskoeffizienten auf und verringern damit die Impfquote. Am deutlichsten in den Bundesländern Tirol, Salzburg, Oberösterreich und Kärnten.
+
+### Modelloptimierung
+
+Um unser Modell im Sinne von [Ockhams Razor](https://de.wikipedia.org/wiki/Ockhams_Rasiermesser) noch etwas schlanker zu gestalten, wollen wir noch die **nicht signifikanten metrischen Variablen entfernen**:
+
+```{r lm2 ohne noAut}
+lm2 <- lm(anteil_immun ~ tote_100k + bev_anteil_65plus 
+          + bildung_anteil_hochschule + bld, data = sel_daten_trans)
+summary(lm2)
+
+```
+
+Das Entfernen des Anteils der Nicht-ÖsterreicherInnen bewirkt, dass im Vergleich zu lm1 die Bundeslandzugehörigkeit zu Wien signifikant zu einer verringerten Impfquote beiträgt. Nennesswerte Verschiebungen in den Regressionskoeffizienten der Dummy-Variablen zur Bundeslandzugehörigkeit können wir aber nicht beobachten.
+
+Bliebe noch die Mortalität zu entfernen:
+
+```{r lm3 ohne tote_100k}
+lm3 <- lm(anteil_immun ~ bev_anteil_65plus + bildung_anteil_hochschule + bld, 
+          data = sel_daten_trans)
+summary(lm3)
+```
+
+**🤔 Was hat uns das Entfernen dieser beiden metrischen Variablen nun gebracht?**
+
+Einerseits habt sich die Varianzaufklärung unseres Modells dadurch graduell von knapp 63% auf 60% verschlechtert. Gleichzeitig konnten wir aber auch die Anzahl der erklärenden Variablen von fünf auf drei reduzieren. Ein Tradeoff den wir hier einmal akzeptieren können: Mit fast der Hälfte an Variablen nahezu die gleiche Varianzaufklärung zu liefern, ist kein schlechter Deal 😉
+
+In Summe hat sich gezeigt, dass die Bundeslandzugehörigkeit unser ursprünglich rein metrisches Modell deutlich verbessert hat. Die im Laufe unserer Analyse entfernten Variablen wie der Anteil der FPÖ-WählerInnen, die Corona-bedingte Mortalität oder der Anteil der Nicht-ÖsterreicherInnen in den Bezirken erwiesen sich zur Erklärung der bezirksweisen Impfquoten als nicht aussagekräftig.
+
+## Abschließendes Prüfen der Modellannahmen
+
+Analog zu Kapitel \@ref(annahmen) wollen wir zuletzt noch überprüfen, ob unser Modell lm3 folgende Modellannahmen erfüllt:
+
+1.  Linearer Zusammenhang gegeben
+
+2.  Residuen = normalverteilt
+
+3.  Erwartungswert der Residuen = 0
+
+4.  Residuen haben konstante Varianz (Homoskedastiziät)
+
+5.  Residuen sind unkorreliert zu Beobachtungen (Autokorrelation)
+
+### Prüfung des linearen Zusammenhangs
+
+Anhand des **"Residuals vs. Fitted"-Plot** sehen wir, dass
+
+-   kein klares Muster in der Punktverteilung ersichtlich ist;
+
+-   und die Regressionslinie naher der Null-Linie zu liegen kommt.
+
+```{r}
+plot(lm3, 1, labels.id = sel_daten_trans$bez_txt)
+```
+
+Wir können also von einem linearen Zusammenhang ausgehen.
+
+### Prüfung der Normalverteilung der Residuen
+
+Da die Residuen ja Abbild einer zufälligen Streuung sein sollten, müssten sie einer Normalverteilung folgen. Auch hier bietet R einen passenden Standard-Plot für lineare Modelle: Einen sgn. **"Q-Q Plot".** In unserem Fall sehen wir eine hinreichend gute Annäherung an eine Normalverteilung - also an die strichlierte Hauptdiagonale:
+
+```{r}
+plot(lm3, 2, labels.id = sel_daten_trans$bez_txt)
+```
+
+> **📚 Exkurs: ... Leverage one**
+>
+> Die Adleraugen haben sicherlich den Fehler im obigen Output erkannt: `Warning: not plotting observations with leverage one: 93`. Diese Fehlermeldung lässt sich in unserem Fall auf die Datenstruktur zurückführen: Kategoriale Variablen bei denen ein Level nur mit einer Beobachtung besetzt sind, verursachen Probleme bei der Berechnung von Residuen. In unserem Fall trifft das auf den Bezirk Wien (Rekord Nr. 93), da er der einzige Bezirk im Bundesland Wien ist.\
+> **Kurz und gut:** Aufgrund unserer speziellen Datenstruktur können wir diese Fehlermeldung ignorieren.
+
+### Prüfung des Erwartungswerts der Residuen
+
+Der Erwartungswert (= Summe) der Residuen sollte bei 0 liegen. Um dies zu überprüfen:
+
+```{r}
+sum(residuals(lm3))
+```
+
+Jep, bei 15 Nullen nach dem Komma, können wir von einer hinreichenden Approximation von 0 ausgehen 😉 .
+
+### Prüfung der Konstanz der Varianz der Residuen ("Homoskedastizität")
+
+Im **Scale-Location-Plot** sehen wir ...
+
+```{r message=FALSE, warning=FALSE}
+plot(lm3, 3, labels.id = sel_daten_trans$bez_txt)
+```
+
+... einigermaßen gleichmäßig über die Fitted-Values verteilte Residuen (= annähernd horizontal verlaufende Regressionsgerade). Wir können somit von einer **Homogenität in den Varianzen** ("Homoskedastizität") ausgehen.
+
+### Prüfung auf Autokorrelation
+
+Eine weitere Annahme linearer Modelle ist die
+
+Um final zu überprüfen, ob die **Unabhängigkeit der Residuen von der Reihenfolge der Beobachtungen.** gegeben ist:
+
+```{r}
+ggplot(sel_daten_trans, aes(x=(1:length(bez_id)), y=residuals(lm3))) +
+  geom_point() +
+  geom_smooth(method='lm', formula= y~x, se=F, color="red") +
+  labs(x = "\nBeobachtungen", y = "Residuen\n") +
+  theme_gray(base_size = 18)
+```
+
+Und wieder ist ein "Jep!" angebracht: Wir sehen in der Verteilung der Residuen über die Beobachtungen keine auffälligen Muster, was auch durch die Lagen der Regressionsgeraden entlang der Nullline bestätigt wird. Wir können also eine Autokorrelation ausschließen.
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, ...**
+
+-   wie wir direkt in R **Datenmanipulationen** wie die Transformation einer numerischen Variable in einen Faktor vornehmen können;
+-   wie die **Dummy-Kodierung** von Faktoren in R abläuft;
+-   wie wir **Visualisierungen** zur Interpretation von **Modellparametern** nutzen können;
+-   dass die **Bundeslandzugehörigkeit** eines Bezirkseinen starken Beitrag zur Erklärung der Impfquote liefert.
+
+![](images/faszinierend.gif){.videoframe width="210"}
+
+**Einfach faszinierend!**

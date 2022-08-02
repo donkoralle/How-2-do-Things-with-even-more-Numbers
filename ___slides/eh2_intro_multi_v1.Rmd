@@ -1,0 +1,209 @@
+---
+title: "Multivariate Verfahren: Ein Überblick"
+subtitle: "716408 | How 2 do Things with even more Numbers"
+author: "KMH"
+date: "WS 21-22 (updated: `r Sys.Date()`)" 
+output:
+  xaringan::moon_reader:
+    css: [mycss_metropolis_v1.css, metropolis, metropolis-fonts]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r xaringanExtras, echo=FALSE}
+xaringanExtra::use_share_again()  # für die Buttons zur Navigation
+xaringanExtra::use_tile_view()    # für den Overview auf die Slides
+```
+class: zwischentitel, center, middle
+
+# .emolarge[🤔]<br>Multi... was? 
+
+---
+
+# Multivariate Verfahren
+* … untersuchen **mehrere Variablen gleichzeitig**
+    + Zusammenhänge
+    + Klassifikationen & Ähnlichkeiten
+* „lange“ **Tradition**
+    + Fast ausschließlich computerbasiert
+* **Laufend neue** (komplexere) Verfahren
+    + Fragestellung -> Zielsetzung Analyse
+    + Skalenniveau
+
+---
+
+# Warum multivariate Verfahren(?)
+
+* **univariat:** Beschreibung eines Merkmals
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container450">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S15_4.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Eigene Erstellung, 2019)]
+
+---
+
+# Warum multivariate Verfahren(?)
+
+* **bivariate Analyse:** Beschreibung des Zusammenhangs zwischen zwei Merkmalen
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container400">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S16_5.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Eigene Erstellung, 2019)]
+
+---
+
+# Warum multivariate Verfahren(?)
+
+* **Sonderfall:** Zusammenhänge zwischen drei Merkmalen  
+🡒können dreidimensional visualisiert werden
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container400">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S17_6.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Eigene Erstellung, 2019)]
+
+---
+
+# Warum multivariate Verfahren(?)
+
+* Vier und mehr Merkmale: Zusammenhänge mittels paarweisen Scatterplots
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container400">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S18_7.png")
+knitr::asis_output("</div>")
+```
+.quelle[[(Charles Minard, PD, Wikimedia)](https://commons.wikimedia.org/wiki/File:Minard.png)]
+
+---
+
+# Warum multivariate Verfahren(?)
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_19.png")
+knitr::asis_output("</div>")
+```
+.quelle[(National Geographic 2012)]
+
+---
+
+# Darum multivariate Verfahren(!)
+  
+Kendalls Ziele (1980:1):
+  + Strukturelle **Vereinfachung**: Elimination „überflüssiger“ Variablen
+  + **Klassifikation**: Merkmalsträger gruppieren
+  + Variablen **gruppieren**: „verwandte“ Variablen identifizieren 
+  + Analyse der **Interdependenz**: Zusammenhänge zwischen Variablen
+  + Analyse der **Dependenz**: Abhängigkeit einer Variable von anderen
+  + Formulieren bzw. Überprüfen von **Hypothesen**
+
+---
+
+# .font80[Eine duale Sicht auf multivariate Verfahren I]
+
+**Strukturprüfende Verfahren:**
+
+.spacing06[
+
++ Überprüfung von kausalen Abhängigkeiten:  
+1 erklärte von n erklärenden Variablen
++ Strategie:
+    - Vorwissen 🡒 These(n) 🡒 Überprüfung
++ Klassiker:
+    - Multiple (lineare & nicht-lineare) Regression
+    - Zeitreihenanalyse
+    - Varianzanalyse
+    - Diskriminanzanalyse
+    - Strukturgleichungsmodelle 
+
+]
+
+---
+
+# .font70[Regression in Action: Woher kommt die Creative Class?]
+
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S21_8.png")
+knitr::asis_output("</div>")
+```
+.quelle[([Fritsch & Stützer, 2007](https://www.researchgate.net/publication/225494447_Die_Geografie_der_Kreativen_Klasse_in_Deutschland_The_Geography_of_Creative_People_in_Germany/link/0912f511dfa82492c6000000/download))]
+
+---
+
+# .font70[Regression in Action: Woher kommt die Creative Class?]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_22.png")
+knitr::asis_output("</div>")
+```
+.quelle[([Fritsch & Stützer, 2007](https://www.researchgate.net/publication/225494447_Die_Geografie_der_Kreativen_Klasse_in_Deutschland_The_Geography_of_Creative_People_in_Germany/link/0912f511dfa82492c6000000/download))]
+
+---
+
+# .font70[Regression in Action: Woher kommt die Creative Class?]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_23.png")
+knitr::asis_output("</div>")
+```
+.quelle[([Fritsch & Stützer, 2007](https://www.researchgate.net/publication/225494447_Die_Geografie_der_Kreativen_Klasse_in_Deutschland_The_Geography_of_Creative_People_in_Germany/link/0912f511dfa82492c6000000/download))]
+
+---
+
+# .font80[Eine duale Sicht auf multivariate Verfahren II]
+
+**Strukturentdeckende Verfahren:**
+
++ Entdeckung von Zusammenhängen (Strukturen) zwischen
+    - Variablen
+    - Merkmalsträgern
++ Strategie:
+    - KEIN Vorwissen zu Zusammenhängen 🡒 Analyse 🡒 These(n)
++ Klassische Verfahren:
+    - Clusteranalyse
+    - Hauptkomponenten- & Faktorenanalyse
+    - Multidimensionale Skalierung - MDS
+
+---
+
+# .font60[Clusteranalyse in Action: Typen agrarischer Klimaanpassung]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S27_10.png")
+knitr::asis_output("</div>")
+```
+.quelle[([Grüneis et al. 2018](https://doi.org/10.1016/j.landusepol.2018.08.025))]
+
+---
+
+# .font60[Clusteranalyse in Action: Klassifikation „ländlicher“ Räume]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_28.png")
+knitr::asis_output("</div>")
+```
+.quelle[([Höferl et al. 2007:272ff.](http://www.agit.at/s_c/papers/2007/6228.pdf))]
+
+
+```{r include=FALSE}
+# Finale: Als PDF ablegen
+# pagedown::chrome_print("eh2_intro_multi_v1.html")
+```
+

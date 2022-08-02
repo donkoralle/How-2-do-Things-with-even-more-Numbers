@@ -1,0 +1,579 @@
+# Clusteranalyse II: Gemischtskalige Modelle {#cluster2}
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+In dieser Einheit behandeln und erproben wir die Bildung gemischtskaliger Clustermodelle.
+
+```{r echo=FALSE, purl=FALSE}
+# myScriptname <- tools::file_path_sans_ext(tail(strsplit(rstudioapi::getSourceEditorContext()$path, "/")[[1]], 1))
+myScriptname <- "08_cluster_II_v2"
+
+knitr::asis_output(paste(
+  "<p><strong>tl;dr: </strong>",
+  "<a href=\"https://kamihoeferl.at/lehre/vu_sozwiss_2/",
+  myScriptname,
+  ".R\" type=\"application/octet-stream\">Her mit dem Code!</a></p>",
+  sep = ""))
+```
+
+---
+
+## (Wie) Funktioniert gemischtskalige Clusterung?
+
+Praktisch stellt sich oftmals der Wunsch, Variablen mit unterschiedlichen Skalenniveaus für eine Clusterung zu nutzen. Zwei prominente Strategien, um solche gemischtskaligen Modelle (aka "mixed models") umzusetzen sind:
+
+-   Die Verwendung eines passenden Proximitätsmaßes - beispielsweise der **Gower-Distanz** - in Kombination zu klassischen **hierarchischen bzw. partitionierenden Gruppierungsverfahren**;
+-   Die Verwendung des **Log-Likelihood-Distanz** im Rahmen des **Two-Step-Gruppierungsverfahrens**.
+
+Aus didaktischen Gründen fokussiert diese Einheit auf die Nutzung der Gower-Distanz zur hierarchischen Clusterung. Interessierte am Thema Two-Step-Clusterung möchte ich auf die Beschreibung des [R-Packages "prcr"](https://cran.r-project.org/web/packages/prcr/prcr.pdf) verwiesen.
+
+## Die Gower-Distanz
+
+Im Gegensatz zu euklidischen Distanz kann die Gower-Distanz auch von gemischtskalige Sets von Merkmalen berechnet werden. Dazu werden in der Gower-Distanz die Manhatten-Distanz für metrische mit dem Würfelmaß für nominale und ordinale Merkmale kombiniert:
+
+$$
+d_{Gower (i,j)} = 
+\frac{\sum_{k=1}^{p}\delta_{ij}^{(k)}d_{ij}^{(k)}}
+{\sum_{k=1}^{p}\delta_{ij}^{(k)}} \\
+$$
+
+$$
+\begin{aligned}
+  & i, j ~ ...~ \text{Beobachtungen i und j} \\
+  & k ~ ...~ \text{k-tes Merkmal (= Variable)} \\
+  & p ~ ...~ \text{Anzahl der Merkmale (= Variablen)} \\
+  & \delta_{ij}^{k} ~ ...~ \text{'Spannweite' des binären Mermals k (= 1)} \\
+  & d_{ij} ~ ...~ \text{Übereinstimmung binäre Merkmalsausprügung Beobachtung i und j} \\
+\end{aligned}$$
+
+Die Übereinstimmung $d_{ij}$ wird dabei wie folgt ermittelt:
+
+$$
+d_{ij}^{(k)} = \begin{cases}
+    1 & \text{wenn } x_{ik} \neq x_{jk} \\
+    0 & \text{wenn } x_{ik} = x_{jk}
+  \end{cases}
+$$
+
+Bei metrischen Merkmalen wird die Gower-Distanz anhand folgender Formel ermittelt:
+
+$$
+d_{Gower (i,j)} =
+\sum_{k=1}^{p} \frac{|x_{ik} - x_{jk} |} {R_{k}}
+$$
+
+Wobei $R_{k}$ wie folgt ermittelt wird:
+
+$$
+R_{k} = max_{ik} - min_{ik} = \text{Spannweite der Variable k}
+$$
+
+Die so ermittelte Gower-Distanz weist ein Wertspektrum von 0 (= identisch) bis 1 (= deutlich unterschieden) auf.
+
+**Sehr schön:** Time for some Action
+
+## Ein Beispiel: Überprüfung der "Hillbilly-These" zur COVID-19-Schutzimpfung
+
+["Hillbilly"](https://en.wikipedia.org/wiki/Hillbilly) ist ursprünglich eine stereotype Bezeichnung für Bewohner der ländlich-geprägten Teile der Vereinigten Staaten von Amerika. Mit zunehmender Dauer der Pandemie mehren sich die Befunde, u.a. in den ländlichen Regionen der USA eine **"Vaccine Hesitancy"** festgestellt werden kann:
+
+* Rural America’s False Sense of Security: https://www.theatlantic.com/politics/archive/2021/11/pandemic-covid-urban-rural-divide/620730/
+* Vaccine Hesitancy in Rural America: https://www.kff.org/coronavirus-covid-19/poll-finding/vaccine-hesitancy-in-rural-america/
+* COVID-19 Vaccination Hesitancy in the United States:  https://link.springer.com/article/10.1007/s10900-020-00958-x
+
+Neben dem schlechteren Zugang zu medizinischer Versorgung belegen diese ersten Befunde die Bedeutsamkeit weltanschaulicher Überzeugungen für die Entscheidung zur COVID-19-Schutzimpfung.
+
+Ausgehend von diesen befunden, wollen wir uns in Österreich auf die Suche nach einer ländlich geprägten, weltanschaulich beeinflussten Skepsis gegenüber der COVID-19-Schutzimpfung machen. Oder etwas flapsiger formuliert: **Gibt es so etwas wie österreichische Impf-Hillbillies?**
+
+Und wenn ja: 
+
+* Wie verbreitet sind sie?
+* Wo sind sie zu finden?
+
+**Methodologisch wollen wir dabei folgendermaßen vorgehen:**
+
+1. Wir formulieren zunächst die "Hillbilly-These": Je ländlicher und weltanschaulich impfskpetisch eingestellt die BewohnerInnen in einer Gemeinde sind, desto geringer fällt die COVID-19-Impfquote in diesen Gemeinden aus.
+2. Diese These werden wir für den Zeitpunkt Oktober 2021 mittels Clusteranalyse evaluieren:  
+Dabei werden wir die österreichischen Gemeinden anhand folgender drei Eigenschaften klassifizieren:
+
+  * **Kommunale COVID-19-Impfquote:**  
+  bereitgestellt durch das Bundesministerium für Soziales, Gesundheit, Pflege und Konsumentenschutz unter: https://www.data.gv.at/katalog/dataset/covid-19-schutzimpfungen-impfungen-in-gemeinden/resource/89ad8077-0318-4dfb-953f-0824754b5adc
+  * **Städtisch-ländlicher Charakter der Gemeinde:**  
+  umgesetzt anhand der [Urban-Rural-Typologie der Statistik Austria](https://www.statistik.at/web_de/klassifikationen/regionale_gliederungen/stadt_land/index.html), bereitgestellt unter: https://www.statistik.at/wcm/idc/idcplg?IdcService=GET_NATIVE_FILE&RevisionSelectionMethod=LatestReleased&dDocName=108339
+  * **Weltanschauliche Impfskepsis der BeweohnerInnen:**  
+  näherungsweise abgebildet über den kommunalen Stimmanteil der FPÖ bei der Nationalratswahl 2019, bereitgestellt durch das Bundesministerium für Inneres unter: https://www.data.gv.at/katalog/dataset/ergebnisse-der-nationalratswahl-2019-aviso/resource/3865d49b-9d3c-480a-8d0e-959bebddc81a
+  
+3. Sollten wir diese These positiv evaluieren, wollen wir abschließend die räumliche Verbreitung dieses Phänomens anhand einer thematischen Karte klären. 
+
+Die oben angeführten Daten können gesammelt [**🔽 als Excel-Datei hier heruntergeladen werden 🔽**](data/corona_gem_cluster_v2.xlsx).
+
+> **👉 Anmerkung**:  
+Wir gehen in dieser Einheit von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+## Einige Vorüberlegungen {#vorueberlegungen-cluster-2}
+
+Bevor wir die eigentliche Cluster-Analyse durchführen, müssen wir uns jedoch die folgenden Fragen stellen:
+
+1.  **Kann eine Gleichgewichtung der der Merkmale (= Variablen) sichergestellt werden?**\
+    Da vorab keine Informationen zur Bedeutung einzelner Variablen für die Gruppierungen der Merkmalsträger vorliegen, wird eine Gleichgewichtung der Variablen angenommen. Korrelierte Variablen würden dieser Gleichgewichtung zuwiderlaufen. Sollten stark korrelierte Variablen (Daumenregel: > 0,8) vorliegen:
+
+    -   sollten diese von der Clusterung ausgeschlossen werden;
+    -   Kann eine explorative Faktorenanalyse der Clusterung vorgeschalten werden.
+
+2.  **Weisen die gewählten Variablen "genügend" Varianz auf?**\
+    Konstante Variablen wären in der Clusterung nicht trennungswirksam und sollten daher ausgeschlossen werden.
+
+3.  **Sind die Messskalen meiner Variablen vergleichbar?**\
+    Sollten unterschiedliche Messskalen vorliegen, empfiehlt sich eine z-Transformierung der Variablen. Dadurch kann eine indirekte Gewichtung der Variablen vermieden werden (vgl. Punkt 2).
+
+4.  **Wie werden Ausreißer in der Analyse identifiziert und behandelt?**\
+    Da Ausreißer meist zu heterogenen Cluster-Lösungen führen, sollten "extreme" Ausreißer von der weiteren Analyse ausgeschlossen werden.
+
+Diese Fragen wollen wir in weiterer Folge kurz behandeln.
+
+🧐 Und was sagt der Captain dazu?
+
+![](images/make_it_so.gif){.videoframe width="210"}
+
+## Die Datenaufbereitung
+
+```{r}
+library(readxl)     # Excel-Dateien lesen
+library(tidyverse)  # https://www.tidyverse.org/packages/
+
+daten <- read_excel("data/corona_gem_cluster_v2.xlsx", sheet = "ex")
+
+# qual. Variablen setzen
+daten <- daten %>%
+  mutate(ur_metatypus = factor(ur_metatypus, labels = c("Urbane Räume",
+                                                "Regionale Zentren",
+                                                "Ländliches Umland",
+                                                "Ländlicher Raum")),
+         ur_typus = factor(ur_typus, labels = c("Urbane Großzentren",
+                                                "Urbane Mittelzentren",
+                                                "Urbane Kleinzentren",
+                                                "Regionale Zentren, zentral",
+                                                "Regionale Zentren, intermediär",
+                                                "Ländlicher Raum im Umland von Zentren, zentral",
+                                                "Ländlicher Raum im Umland von Zentren, intermediär",
+                                                "Ländlicher Raum im Umland von Zentren, peripher",
+                                                "Ländlicher Raum, zentral",
+                                                "Ländlicher Raum, intermediär",
+                                                "Ländlicher Raum, peripher")),
+         degurba_21 = factor(degurba_21))
+
+```
+
+Wie gehabt werfen wir einen Blick auf mögliche Lücken im Datensatz:
+
+```{r}
+colSums(is.na(daten)) %>%
+  knitr::kable()
+```
+
+Glücklicherweise ist dies nicht der Fall.
+
+## Ein Blick auf die gewählten Clustervariablen
+
+Wir definieren zunächst die zur Clusterung genutzten Variablen ...
+
+```{r}
+myQuantVars = c("immun_100k", "anteil_fpoe")
+myQualVars = c("ur_metatypus")
+myVars = c(myQuantVars, myQualVars)
+```
+
+... um uns danach einen Einblick in deren Wertverteilungen zu verschaffen; zunächst numerisch ...
+
+```{r}
+daten %>%
+  select(all_of(myVars)) %>%
+  summary()
+```
+
+... und natürlich auch graphisch:
+
+```{r}
+daten %>%
+  select(all_of(myQuantVars)) %>%
+  pivot_longer(cols = everything(), names_to = "Variable", values_to = "Messwert") %>%
+  ggplot(., aes(x = "", y = Messwert)) +
+  geom_boxplot() +
+  labs(x = "Variablen", y = "Messwerte\n") +
+  facet_wrap(~ Variable, scales = "free_y")
+
+daten %>%
+  group_by(ur_metatypus) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  ggplot(. , aes(x = "", y = n, fill = ur_metatypus)) +
+  geom_bar(stat = "identity", position = 'fill') +
+  labs(x = "ur_typus", y = "Anteile [%]")
+```
+
+Wir sehen, dass vor allem die qualitative Variable ur_metatypus nur bedingt streut. Dieser "Quasi-Konstanz" (mehr als 50% der Gemeinden liegen im "Ländlichen Raum") werden wir im weiteren Verlauf der Analyse besondere Aufmerksamkeit widmen.
+
+Da die beiden metrischen Variablen auf unterschiedlichen Messskalen gemessen werden, nehmen mir eine z-Transformation vor. Dadurch können wir eine (unabsichtliche) Gewichtung dieser beiden Variablen verhindern:
+
+```{r}
+daten_trans <- daten %>%
+  select(gem_id, gem_txt, all_of(myVars)) %>%
+  mutate(across(all_of(myQuantVars), scale)) %>%
+  mutate_if(is.matrix, as.numeric)  # scale liefert eine Matrix und keinen numeric > wieder zurückstellen
+```
+
+Zuletzt wollen wir noch einen Blick auf die Korrelationen zwischen unseren metrischen Clustervariablen werfen:
+
+```{r}
+library(GGally)
+ggpairs(daten, myQuantVars)
+```
+
+Gemäß unser Daumenregel "Keine Korrelation stärker als +/- 0,8" sehen wir, dass beide Variablen in die Clusterung eingehen können.
+
+## Ermittlung der Ähnlichkeiten
+
+Bevor wir die Ähnlichkeiten zwischen den Gemeinden ermittel können, müssen wir noch eine kleine Änderung an unserem Datensatz vornehmen: Um bei den weiterführenden Berechnung den Gemeindecode automatisch als Label nutzen zu können, muss dieser als Zeilenname ("Rowname") hinterlegt werden:
+
+```{r}
+daten_trans_fit0 <- daten_trans %>%
+  mutate(gem_id_rows = gem_id) %>%
+  tibble::column_to_rownames("gem_id_rows")
+```
+
+Aufgrund der unterschiedlichen Skalen unserer Clustervariablen nutzen wir zur Abbildung der (Un-)Ähnlichkeit unserer Gemeinden die eingangs beschriebene **Gower-Distanz**:
+
+```{r}
+library(cluster)
+gower_dist_fit0 <- daisy(daten_trans_fit0[myVars], metric = "gower")
+summary(gower_dist_fit0)
+```
+
+Die Summary zeigt uns, dass die Skalen unserer Clustervariablen korrekt erkannt wurden: Types = I, I, N steht für zwei intervall- und eine nominal skalierte Variable. Ein Blick auf die Minima und Maxima zeigt uns, dass sehr ähnliche (Minimum nahe bei 0) und unähnliche (Maximum nahe bei 1) in unserem Datensatz enthalten sind.
+
+Ausgehend von diesen Ähnlichkeiten können wir uns als nächstes auf die Suche nach möglichen Ausreißern machen.
+
+
+## Identifikation von Ausreißern
+
+Hierzu greifen wir wieder auf eine einfache Single-Linkage Clusterung zurück:
+
+```{r}
+fit0 <- hclust(gower_dist_fit0, method = "single")
+plot(fit0, main = "Single Linkage Clusterung", cex = 0.65)
+```
+
+Aufgrund der hohen Anzahl an Merkmalsträgern gestaltet sich hier die rein visuelle Interpretation des Dendrogramms als nicht sehr ergiebig 🙄.
+
+Wir können uns aber den Fusionierungsverlauf numerisch über eine Funktion als sgn. "Agglomeration Schedule" darstellen lassen:
+
+```{r}
+get.agglo <- function(clustermodell){
+  data.frame(row.names=paste0("Cluster",seq_along(clustermodell$height)),
+             height=clustermodell$height,
+             components=ifelse(clustermodell$merge<0, clustermodell$labels[abs(clustermodell$merge)],
+                               paste0("Cluster",clustermodell$merge)),
+             stringsAsFactors=FALSE)
+}
+
+tail(get.agglo(fit0), 10)
+```
+
+Wir sehen, dass die Gemeinde 20503 als letzte verbleibende Gemeinde einem Cluster zugeordnet wurde. Ein Blick auf den Verlauf der Variable "height" - also dem Ansteigen Heterogenität der gefundenen Clusterlösungen - zeigt uns keine drastischen Veränderungen. Wir können damit keine Ausreißer ausmachen und müssen daher auch keine Gemeinden vorab aus dem Datensatz entfernen.
+
+Und damit kommen wir ...
+
+## Clusterung der Gemeinden
+
+Um ähnlich besetzte Cluster zu erhalten, greifen wir dabei auf den **Ward-Algorithmus** zur Fusionierung zurück:
+
+```{r}
+fit1 <- hclust(gower_dist_fit0, method="ward.D2")
+plot(fit1, main = "Ward-Clusterung", cex = 0.5)
+```
+
+Ein Blick auf das Dendrogramm deutet uns zwei große Gruppen mit mehreren Untergruppen an. Um die Anzahl der zu wählenden Cluster zu bestimmen erstellen wir das aus Kapitel \@ref(cluster1) bekannte **Elbow-Diagramm**:
+
+```{r}
+# Heterogenität der letzten 10 Schritte holen
+height <- sort(fit1$height)
+Schritt <- c(10:1)
+height <- height[(length(height)-9):length(height)]
+screeplot_data_1 <- data.frame(Schritt, height)
+# plotten
+ggplot(screeplot_data_1, aes(x=Schritt, y=height)) +
+  geom_line(size=1) +
+  scale_x_continuous(breaks=Schritt) +
+  labs(title = "Elbow-Diagramm", x = "Anzhal Cluster") +
+  geom_vline(xintercept=6, color = "red")
+
+```
+
+Um einen möglichst detailliert bei der Evaluation der "Hillbilly-These" vorgehen zu können, entscheiden wir uns für 6 Cluster.
+
+```{r}
+nCluster <- 6
+# Dendorgramm erstellen
+plot(fit1, cex = 0.75, main = "Ward Clusterung")
+rect.hclust(fit1, k = nCluster, border="red")
+```
+
+Diese Lösung liefert uns ...
+
+```{r}
+table(cutree(fit1, k = nCluster))
+```
+
+... drei stark, zwei mittel und einen schwach besetzten Cluster.
+
+Diese Cluster speichern wir zunächst in den (nicht-)transformierten Datenframes ab:
+
+```{r}
+# zunächst in den zur Berechnung genutzten Datenframe
+daten_trans_fit0$fit1_cl6 <- as_factor(cutree(fit1, k = nCluster))
+# dann per join (sicherer bei Ausreißern) im transformierten Ausgangsdatensatz
+daten_trans <- daten_trans_fit0 %>%
+  select(gem_id, fit1_cl6) %>%
+  left_join(daten_trans, ., by = "gem_id")
+# ... und noch auf die nicht-transformierten Daten
+daten <- daten_trans %>%
+  select(gem_id, fit1_cl6) %>%
+  left_join(daten, ., by = "gem_id")
+```
+
+## Beurteilung der Trennschärfe der gewählten Clusteranzahl
+
+Bevor wir zur Charakterisierung der Cluster übergehen, wollen wir zunächst noch ein Bild von der Güte - also der Trennschärfe - der gewählten Clusteranzahl kommen. In Kapitel \@ref(cluster1) konnten wir dazu für rein metrische Variablen auf eine Hauptkomponentenanalyse zurückgreifen. Diese Vorgehensweise können wir hier nicht erneut anwenden, da unsere Clustervariablen ja zu Teilen auch nominal skaliert sind.
+
+Glücklicherweise können solche gemischtskaliges Datenset - genauer gesagt: die Distanzen zwischen den Merkmalsträgern eines solchen Sets - mittels des [**t-distributed stochastic neighbor embedding** Verfahrens](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding) in einem zweidimensionalen Raum abgebildet werden. Dieses Verfahren versucht mehrdimesionale Objekte (in unserem Fall: 3) so zweidimensional abzubilden, dass ähnliche Objekte nahe und unähnliche weit voneinander entfernt zu liegen kommen. 
+
+> **👉 Tipp:**  
+Da es sich dabei um ein stochastisches Verfahren handelt, empfiehlt es sich in R mittels set.seed einen Ausgangspunkt für die Ermittlung von Zufallszahlen zu setzen. Hierdurch wird - trotz stochastischer Verfahren - die **Reproduzierbarkeit** der Ergebnisse sichergestellt.
+
+Über das Package **Rtsne** bietet uns eine gelungene Implementierung des t-distributed stochastic neighbor embeddings:
+
+```{r message=FALSE, warning=FALSE}
+library(Rtsne)
+set.seed(1976)
+
+tsne_obj <- Rtsne(gower_dist_fit0, is_distance = TRUE)
+
+tsne_data <- tsne_obj$Y %>%
+  data.frame() %>%
+  setNames(c("X", "Y")) %>%
+  mutate(cluster = daten_trans_fit0$fit1_cl6,
+         name = daten_trans_fit0$gem_id)
+
+ggplot(tsne_data, aes(x = X, y = Y)) +
+  geom_point(aes(color = cluster))
+```
+
+Wir sehen dass 3 der 6 Cluster (1, 3 & 5) sich deutlich von den anderen Clustern unterscheiden. Die Cluster 2, 4 & 6 sind in sich großteils homogen, lassen sich aber nicht so klar von einander unterscheiden wie die Cluster 1, 3 & 5. Speziell in Hinblick auf die geringe Streuung der Variable ur_metatypus kann diese Trennschärfe als noch akzeptabel bezeichnet werden.
+
+
+## Charakterisierung der Cluster
+
+Werfen wir nun einen ersten numerischen Blick auf unsere Cluster:
+
+```{r}
+daten %>%
+  group_by(fit1_cl6) %>%
+  summarise(across(all_of(myQuantVars), median), .groups = "keep")
+```
+
+Ein schneller Blick auf die Mediane zeigt uns, dass beim Anteil der FPÖ-WählerInnen nur Cluster 4 sich klar abheben kann: In diesem Cluster sammeln sich Gemeinden mit einem klar überdurchschnittlichen FPÖ-Stimmenanteil. Gleichzeitig weist dieser Cluster auch eine geringe Immunisierungsrate auf.
+
+Das ganze noch graphisch - zunächst mit den transformierten Daten:
+
+```{r}
+daten_trans %>%
+  group_by(fit1_cl6) %>%
+  summarise(across(all_of(myQuantVars), mean), .groups="keep") %>%
+  pivot_longer(all_of(myQuantVars), names_to = "variable", values_to ="wert") %>%
+  ggplot(., aes(x=variable, y=wert, fill=variable)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~ fit1_cl6)
+```
+
+In Hinblick auf die zu evaluierende "Hillbilly-These" erscheint vor allem Cluster 4 interessant: Dieser weist eine überdurchschnittliche FPÖ-Affinität und eine unterdurchschnittliche Immunisierungsquote auf. Dieses Muster würde für die These sprechen. Gleichzeitig weist jedoch Cluster 6 eine leicht unterdurchschnittliche FPÖ-Affinität und die geringste Immunisierungsquote auf, was dieser These widersprechen würde.
+neben den transformierten Daten empfiehlt es sich aber auch immer einen Blick auf die nicht-transformierten Werte zu legen:
+
+```{r}
+ggplot(daten, aes(x = fit1_cl6, y = anteil_fpoe, fill = fit1_cl6)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "anteil_fpoe", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.15, color="black") +
+  theme(legend.position = "none")
+```
+
+Dabei sehen wir, dass vor allem beim FPÖ-Stimmenanteil sich nur Cluster 4 klar von den restlichen Clustern abhebt.
+
+```{r}
+ggplot(daten, aes(x = fit1_cl6, y = immun_100k, fill = fit1_cl6)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "immun_100k", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.15, color="black") +
+  theme(legend.position = "none")
+```
+
+Ergänzt man dies um die Immunisierungsquote, zeigt sich, dass lediglich Cluster 4 der "Hillbilly-These" entspricht: Eine hohe FPÖ-Affinität trifft dort auf eine der geringsten Immunisierungsquoten.
+
+Bleibe aber noch die Frage zu klären, wie viel "Hill" - also "Ländlichkeit" - in cluster 4 anzutreffen ist:
+
+Dazu blicken wir auf die Verteilung der Raumtypen der Rural-Urban-Typologie in den Clustern ...
+
+```{r}
+table(daten$fit1_cl6, daten$ur_metatypus)
+```
+
+Wir sehen, dass der Raumkategorie "Ländlicher Raum" auf drei Cluster aufgeteilt wurde. Die Cluster 1, 3 & 5 decken damit sortenrein die restlichen 3 Rural-Urban-Typen ab. Die bei der Beurteilung der Cluster-Trennschärfe festgestellte Ähnlichkeit der Cluster 2, 4 & 6 scheint sich damit aus der Zugehörigkeit zum "Ländlichen Raum" zu erklären.
+
+Lösen wir die Rural-Urban-Typologie mithilfe der Variable "ur_typus" noch etwas feiner auf ...
+
+```{r}
+ggplot(daten, aes(x = fit1_cl6, fill = ur_typus)) +
+  geom_bar(position = "fill")
+```
+
+... sehen wir, dass doch ziemlich viel "Hill" in unserem Cluster 4 anzutreffen ist: Dieser besteht überwiegend aus zentral gelegenen ländlichen Räumen. Diese ausgewiesene "Ländlichkeit" erweist sich als durchaus passfähig zur "Hillbilly-These". In Summe scheint unsere "Hillbilly-These" zu einem unserer 6 Cluster zu passen. Gleichzeitig sehen wir aber auch, dass auf die Mehrzahl der (auch ländlichen) Gemeinden diese These sich als nicht erklärungskräftig erweist.
+
+In Summe zeigt sich hier klar der stark gruppenbildende Effekt der qualitativen Variable ur_metatyp. Die Cluster 1, 3 & 5 stellen dadurch sortenreine Abbilder der Metatypen dieser Variable dar. Durch die gewählte Anzahl der Cluster wurde letztlich der "Ländliche Raum" auf die verbleibenden Cluster 2, 4 & 6 aufgeteilt.
+
+Werfen wir abschließend noch einen Blick auf die räumliche Verteilung dieser Cluster.
+
+
+## Die räumliche Verteilung der Cluster
+
+Um unsere zumindest zu Teilen nicht widerlegte "Hillbilly-These" zu verfeinern, wollen wir noch nachsehen, ob wir insbesondere bei Cluster 4 räumliche Muster erkennen können. Dazu 
+
+* benötigen wir zunächst die Geometriedaten der österreichischen Gemeinden zum Stand 2021;
+* diese Daten müssen wir aufarbeiten;
+* mit den Attributdaten (= Clusterzuordnung) verschneiden;
+* und letztlich als Choroplethenkarte darstellen.
+
+### Die Datenbeschaffung & -aufbereitung
+
+Die Geometriedaten der österreichischen Gemeinden zum Stand 2021 beziehen wir von der Statistik Austria:
+
+🔽 https://www.data.gv.at/katalog/dataset/stat_gliederung-osterreichs-in-gemeinden14f53/resource/0338035f-8326-46da-bc01-e4682d2409d3 🔽
+
+Den Inhalt dieses **ZIP-Archivs extrahieren** wir in unserem "data" Ordner in den **Unterordner "gem"**.
+
+> **👉 Anmerkung**: Wir gehen in weiterer Folge von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     gem
+    |       | geodatensatz_1.xyz
+    |       | ...
+    |       | geodatensatz_n.xyz
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+In einem ersten Schritt laden wir nun unsere Geometriedaten und wandeln die (warum auch immer 🤔) als Text ablegte Gemeindekennzahl in eine Zahl um:
+
+```{r}
+gem <- read_sf("data/gem/STATISTIK_AUSTRIA_GEM_20210101.shp")
+gem$id <- as.integer(gem$id)
+```
+
+Aus den Erfahrungen der Einheit \@ref(reg1) überprüfen wir, ob die Wiener Gemeindebezirke in diesem Datensatz enthalten sind:
+
+```{r}
+tail(gem, 30)
+```
+
+Jep, da sind sie 😒. Wir müssen also zunächst die Geometrien dieser Bezirke zur Gemeinde Wien (Gemeindekennziffer: 90001) vereinigen. Oder wie die GeoinformatikerInnen zu sagen pflegen: Wir müssen diese Polygone mittels [Union](https://desktop.arcgis.com/de/arcmap/10.3/tools/analysis-toolbox/union.htm) vereinen. Dafür setzen wir zunächst die Gemeindekennziffer aller Wiener Bezirke auf "90001":
+
+```{r}
+gem_clean <- gem %>%
+  mutate(id = ifelse(id > 90000, 90001, id))
+```
+
+Nun lassen wir über die Gemeindekennziffer den **Union-Befehl** aus dem sf-Package laufen ...
+
+```{r}
+gem_clean <- gem_clean %>%
+  group_by(id) %>%
+  summarise(geometry = st_union(geometry))
+```
+
+Um zukünftige Erstellung dieser Karte abzukürzen speichern wir diese bereinigte Fassung in einer SHP-Datei ...
+
+```{r eval=FALSE}
+st_write(gem_clean, "data/gem/gem_clean.shp")
+```
+
+
+... und werfen einen Blick auf das Ergebnis:
+
+```{r fig.width=9, fig.height=4.75}
+tmap::qtm(gem_clean)
+```
+
+### Die Attributdaten joinen
+
+Über einen Join können wir nun die Clusterzugehörigkeit an die Gemeindegeometrien anhängen:
+
+```{r}
+gem_clean_join <- left_join(gem_clean, daten,
+                            by = c("id" = "gem_id"))
+```
+
+> **🤔 Warum nochmals per Join?**  
+Sollte in der Zwischenzeit die betroffenen Dataframes unterschiedlich sortiert worden sein, würde ein einfaches Übertragen der Cluasterzugehörigkeit zu falschen Zuordnungen führen. Der bei einem Join durchgeführte Abgleich über die Gemeindekennzahl verhindert eine solche Fehlzuordnung.
+
+### Die räumliche Verteilung der Cluster darstellen
+
+Mittels des tmap-Packages können wir nun die räumliche Verteilung der Cluster darstellen:
+
+```{r fig.width=9, fig.height=4.75}
+map_Cl6 <- tm_shape(gem_clean_join) +
+  tm_polygons(col = "fit1_cl6",
+              title = "6-er Cluster-\nLösung",
+              palette = "Set3",
+              # palette = wes_palette("Zissou1", 5),
+              legend.hist = TRUE) +
+  # tm_text("id", size = 0.45, alpha = 0.5, remove.overlap = TRUE) +
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_legend(outside = TRUE,
+            legend.outside.size = 0.15,
+            hist.width = 1,
+            outer.margins = 0)
+map_Cl6
+```
+
+Und letztlich auch als unkomprimiertes Rasterbild abspeichern:
+
+```{r message=FALSE, warning=FALSE}
+tmap_save(map_Cl6, filename = "output/map_Cl6.png",
+          units = "px", dpi = 300,
+          width = 2000)
+```
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, dass ...**
+
+- ... wir Clusteranalyse auch zur **Evaluation** von (mehr oder minder sinnvollen 😉) **Thesen** nutzen können;
+- ... wir mittels der **Gower-Distanz** auch gemischtskalige Modelle umsetzen können;
+- ... die Clusterlösungen solcher Modelle oftmals stark durch die verwendeten qualitativen Variablen getrieben sein können;
+- ... auch die **räumliche Verteilung** von Clustern manchmal aufschlussreich sein kann;
+- ... wir in R auch **einfache Bereinigungen von Geometrien** vornehmen können;
+- ... die "Hillbilly-These" in Österreich eine **beschränkte räumliche Reichweite** hat und nicht einheitlich auf "ländliche" Gemeinden angewandt werden kann.
+
+![](images/hillbilly-dance.gif){.videoframe width="210"}

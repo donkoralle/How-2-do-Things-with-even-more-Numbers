@@ -1,0 +1,42 @@
+---
+title: "How 2 do Things with even more Numbers"
+subtitle: "Multivariate Daten- und Inhaltsanalyse mit R"
+author: "Kami Höferl | https://orcid.org/0000-0002-5397-180X"
+date: "Stand: `r Sys.Date()`"
+bibliography: kmh.bib
+csl: chicago-author-date-de.csl
+link-citations: yes
+site: "bookdown::bookdown_site"
+---
+
+::: {style="margin-bottom:50px;"} 
+:::
+
+```{r messen2, echo=FALSE, out.width="600px", fig.align = "center"}
+knitr::include_graphics("images/cover_cluster_v2.png")
+```
+
+::: {style="margin-bottom:50px;"} 
+:::
+
+# Howdy*  {.unnumbered}
+
+In diesem WorkBook werden Materialien zur VU "Sozialwiss. Methoden -- How 2 do Things with even more Numbers" (716408) aus dem WS 21-22 angeboten. Diese VU richtet sich an Personen, die
+
+-   Fertigkeiten zur Beschaffung und Aufbereitung quantitativer Daten auffrischen wollen;
+-   einen Einblick in Möglichkeiten der multivariaten Auswertung quantiativer Daten mittels R;
+-   sowie einen Einblick in die quantitative Auswertung von Textmaterialien mittels R gewinnen wollen.
+
+Sounds good?
+
+![](images/good.gif){.videoframe}
+
+Let's roll ...
+
+------------------------------------------------------------------------
+
+[![](images/cc_by_h35.jpg)](https://creativecommons.org/licenses/by/4.0/deed.de)
+
+Dieses WorkBook und alle darüber angebotenen Materialien (Code, Daten etc.) stehen -- so nicht ausdrücklich anders angegeben -- unter einer [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.de) Lizenz.
+
+\* ... was die Farben angeht: All [their](https://github.com/karthik/wesanderson) fault!

@@ -1,0 +1,94 @@
+---
+title: "Methoden für die Forschung"
+subtitle: "716408 | How 2 do Things with even more Numbers"
+author: "KMH"
+date: "WS 21-22 (updated: `r Sys.Date()`)" 
+output:
+  xaringan::moon_reader:
+    css: [mycss_metropolis_v1.css, metropolis, metropolis-fonts]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+```{r xaringanExtras, echo=FALSE}
+xaringanExtra::use_share_again()  # für die Buttons zur Navigation
+xaringanExtra::use_tile_view()    # für den Overview auf die Slides
+```
+class: zwischentitel, center, middle
+
+# .emolarge[🤔]<br>Empirie - wozu ? 
+
+---
+
+# .font70[Welche Methoden gibt es überhaupt - eine Auswahl:]
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_5.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Überarbeitung von: Reuber & Pfaffenbach 2005:21)]
+
+---
+
+# .font70[Die Antwort auf die „Geography of the Armchair“]
+* Empirisch fundierte, geographische Erkenntnisgewinnung zu gesellschaftlichen bzw. sozialökolog. Zuständen und/oder Prozessen
+
+* Das **„offensichtliche“ Ziel**:
+  + mittels systematischer, methodisch kontrollierter Untersuchungen
+  + Daten über Mensch-Umwelt-Interaktionen erheben, sammeln, ordnen, verarbeiten, untersuchen & deuten
+
+---
+
+# Exkurs zum „bedeutsameren“ Ziel
+
+Eigentlich interessiert uns ja meist:  
+**Beschreibung, Erklärung & kritische Untersuchung** gesell. bzw. sozialökolog. Zustände und/oder Prozesse
+
+* Strukturierung & Erklärung
+* Ausarbeitung empirisch fundierter Aussagensysteme
+* Dekonstruktion (& Kritik) bestehender Deutungsmuster,  
+Ordnungen & Systeme
+* Überprüfen v. Faktoren, die zielgerichteten gesell. bzw. sozialökologischen Wandel befördern
+
+---
+
+# Der Prozess zum Ziel
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/EH2_intro_S8_1.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Eigene Erstellung, 2018)]
+---
+
+# Eigentlich: Die Prozesse zum Ziel
+
+```{r echo=FALSE}
+knitr::asis_output('<div class="container">')
+knitr::include_graphics ("images/eh2_intro/ImageSlide_9.png")
+knitr::asis_output("</div>")
+```
+.quelle[(Eigene Erstellung, 2017)]
+
+---
+
+# Die eine „passende“ Methode?
+
+.large110[*„Was Geographinnen und Geographen als eine **‚gute‘ Methode** ansehen, ist […] **kontextspezifisch**: Es ist historisch und geographisch ‚eingebettet‘ in die gesellschaftlichen Strukturen und Rahmenbedingungen, und es richtet sich entsprechend auch nach den Problemen, die die Gesellschaft ihrer Wissenschaft zur Bearbeitung aufgibt.“*]  
+(Reuber & Pfaffenbach 2005:17)  
+
+
+* **Konklusio:**
+  + Wahl der Forschungsfrage 🡒
+  + Wahl des Forschungsprozesses 🡒
+  + Wahl einer "guten" (aka. "passenden") Methode
+  
+```{r include=FALSE}
+# Finale: Als PDF ablegen
+# pagedown::chrome_print("eh2_recap_empirie_v1.html")
+```
+

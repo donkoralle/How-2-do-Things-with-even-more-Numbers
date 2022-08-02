@@ -1,0 +1,21 @@
+<html>
+
+  <head>
+  <script>
+    window.addEventListener("load", () => {
+        const enabled = document.querySelectorAll(".fullscreen-enabled");
+        for (let i = 0; i < enabled.length; i++) {
+            enabled[i].style.cursor = "pointer";
+            enabled[i].onclick = () => {
+                enabled[i].requestFullscreen();
+            };
+        }
+    });
+  </script>
+  </head>
+
+  <body>
+  <!-- body content here -->
+  </body>
+
+</html>

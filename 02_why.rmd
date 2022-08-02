@@ -1,0 +1,103 @@
+# Wozu noch mehr Verfahren?
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+Am Beginn gehen wir der Stellung empirischer Analysen in fünf **Forschungsprozessen** nach. Danach behandeln wir für **ausgewählte multivariate als auch inhaltsanalytische Verfahren** deren Zielsetzungen, Vorgehensweisen und Ergebnisse anhand von **Beispielen**.
+
+------------------------------------------------------------------------
+
+Eigentlich recht einfach 🧐 :
+
+Mehr Analyseverfahren erlauben uns, **mehr** (im Sinne von: inhaltlich andere) **Fragen** an Erkenntnisobjekte zu richten. Hier gilt: **The more, the better!**
+
+Bevor wir uns jedoch diesem "mehr" stellen:
+
+## Recap: Zur Rolle der Methoden in der empirischen Forschung
+
+Methoden dienen der Analyse empirischer - in unserem Fall quantitativer - Daten um zuvor aufgestellte Forschungsfragen zu beantworten. Mehr dazu findet sich hier:
+
+```{r echo=FALSE}
+mySlideshow <- "eh2_recap_empirie_v1"
+mySlideWidth <- 600
+mySlideHeight <- 450
+
+knitr::asis_output(paste(
+  "<iframe src=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\" width=\"",
+  mySlideWidth,
+  "px\" height=\"",
+  mySlideHeight,
+  "px\" class=\"videoframe\" allowfullscreen>Your browser doesnot support iframes <a href=\"<https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\">click here to view the page directly.</a></iframe>", sep = ""))
+knitr::asis_output(paste(
+  "<div><a href=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".pdf\">Die Slides als PDF</a></div>",
+  sep = ""))
+```
+
+## Multivariate Verfahren - ein kurzer Überblick
+
+Einen kurzen Einstieg in die Welt der multivariaten Verfahren findet sich in diesen Slides:
+
+```{r echo=FALSE}
+mySlideshow <- "eh2_intro_multi_v1"
+mySlideWidth <- 600
+mySlideHeight <- 450
+
+knitr::asis_output(paste(
+  "<iframe src=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\" width=\"",
+  mySlideWidth,
+  "px\" height=\"",
+  mySlideHeight,
+  "px\" class=\"videoframe\" allowfullscreen>Your browser doesnot support iframes <a href=\"<https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\">click here to view the page directly.</a></iframe>", sep = ""))
+knitr::asis_output(paste(
+  "<div><a href=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".pdf\">Die Slides als PDF</a></div>",
+  sep = ""))
+```
+
+## Quantitative Inhaltsanalyse - ein erster Einblick
+
+Und auch für das weite Feld der quantitativen Inhaltsanalyse findet sich hier ein kurzer Einblick:
+
+```{r echo=FALSE}
+mySlideshow <- "eh2_intro_quant-inhalt_v1"
+mySlideWidth <- 600
+mySlideHeight <- 450
+
+knitr::asis_output(paste(
+  "<iframe src=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\" width=\"",
+  mySlideWidth,
+  "px\" height=\"",
+  mySlideHeight,
+  "px\" class=\"videoframe\" allowfullscreen>Your browser doesnot support iframes <a href=\"<https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\">click here to view the page directly.</a></iframe>", sep = ""))
+knitr::asis_output(paste(
+  "<div><a href=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".pdf\">Die Slides als PDF</a></div>",
+  sep = ""))
+```
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, ...**
+
+-   dass multivariate Verfahren gerne in **explorativen und/oder explanativen Forschungsprozessen** genutzt werden.
+-   dass multiple Regressionsmodelle Beispiele für **strukturprüfende** und Clusteranalysen Beispiele für **strukturentdeckende** multivariate Verfahren sind.
+-   dass Verfahren der quantitativen Inhaltsanalyse **Merkmale von Text-, Bild- oder Tonmaterialien systematisch quantifizieren** und auswerten.
+
+Zeit für die erste **Aufwärmrunde** ...
+
+![](images/cat_warmup_2.gif){.videoframe width="210"}

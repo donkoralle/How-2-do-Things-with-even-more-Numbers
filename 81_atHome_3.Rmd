@@ -1,0 +1,87 @@
+# \@Home3: Clusteranalyse
+
+## 📢 Zielsetzung {.unnumbered}
+
+Ziel dieser Aufgabe ist es, a) mittels Clusteranalyse Erkenntnisse zur Beantwortung einer Untersuchungsfrage bereitzustellen und b) die Untersuchungsfrage nachvollziehbar zu beantworten.
+
+---
+
+## Ausgangslage
+
+Freiflächen wie Parks sind in dicht verbauten städtischen Gebieten oftmals rar gesät. Bedingt durch die hohe NutzerInnenzahl ergeben sich oftmals Konflikte, beispielsweise zwischen Hunde- und KinderbesitzerInnen. Ein Blick in die Medien zeigt, dass diese klassischen Konflikte auch in Wien anzutreffen ist:
+
+* [Währinger "Hunde-Dialog"](https://wien.orf.at/v2/news/stories/2975258/)
+* [Konflikte im Schubertpark](https://kurier.at/chronik/wien/konflikte-im-schubertpark-sollen-spielerisch-geloest-werden/400551134)
+* [Konflikte im Augarten](https://www.diepresse.com/1297643/augarten-hotspot-der-konflikte-mit-hunden)
+
+Ob solche Konflikte in einigen Wiener Gemeindebezirken wahrscheinlicher sind als in anderen, steht im Mittelpunkt dieses \@Homes.
+
+![Wiens Jugend und Hunde - eine oftmals spannungsvolle Beziehung  
+(Quelle: [o.V.](https://www.infosperber.ch/data/attachements/Sebastian_Kurz_Hund_3.jpg))](images/athomes/Sebastian_Kurz_Hund_3.jpg)
+
+## Datengrundlage
+
+Um die Wahrscheinlichkeit solcher Konflikte näher zu untersuchen, bietet die Datei [**🔽 atHome3_Wien_v1.xlsx 🔽**](data/atHome3_Wien_v1.xlsx) einige Strukturdaten der Wiener Gemeindebezirke: 
+
+```{r echo=FALSE}
+library(readxl)
+daten <- read_excel("Data/atHome3_Wien_v1.xlsx", sheet = "EX")
+daten
+```
+
+Diese Strukturdaten umfassen folgende Variablen:
+
+
+| Variable      | Messeinheit    | Beschreibung                                                          |
+|---------------|----------------|-----------------------------------------------------------------------|
+| bez           | -              | Bezirkskennzahl                                                       |
+| bez_txt       | -              | Bezirksname                                                           |
+| freifl_dichte | ha/1.000 EW    | Freiflächendichte (= Parks, Wälder & Wiesen)                     |
+| hunzi_dichte  | Hunde/1.000 EW | Hundedichte                                                           |
+| Jugend_dichte | u18/1.000 EW   | Unter-18-Jährigen-Dichte                                              |
+| wohn_dichte   | EW   / ha      | Wohndichte bezogen auf die Summe der Wohn- und Mischnutzungsflächen |
+
+
+## Aufgabenstellung
+
+Nutzen Sie diese Strukturdaten um herauszufinden, in welchen Wiener Gemeindebezirken Nutzungskonflikte am (un-)wahrscheinlichsten sind. Arbeiten Sie dazu nachvollziehbar (= dokumentiert) folgende Tasks ab:
+
+1. **Gruppieren** Sie die Gemeindebezirke mittels einer Clusteranalyse.
+2. Beurteilen Sie die **Güte** der gewählten Clusterlösung.
+3. **Charakterisieren** Sie die gefundenen Cluster inhaltlich. Dokumentieren Sie dabei auch inhaltliche Auffälligkeiten abseits der zentralen Fragestellung.
+4. So dies aus Ihrer Sicht möglich ist: **Beantworten** Sie abschließend die zentrale Fragestellung in welchen Gemeindebezirken Nutzungskonflikte zwischen Jugendlichen und HundebesitzerInnen am (un-)wahrscheinlichsten sind.
+
+## Formelles
+
+* je 2-er Team 1 A4 Bericht als PDF
+    + Rekapitulation Aufgabenstellung (= Untersuchungsfragen)
+    + Datenaufbereitung
+    + Dokumentation der Analyse
+    + Ergebnisse
+    + Interpretation & Beantwortung der Untersuchungsfrage(n)
+    + Analysecode als Anhang
+* Benennung: **Gruppe_XY_\@Home3.pdf**
+* Abgabe via **OLAT** - Ordner "\@Home3: Clusterung"
+* Deadline: **17.02.22 // 23.59 Uhr**
+
+## Empfehlung
+
+Nutzen Sie für diese Aufgabe folgende Verzeichnisstruktur:
+
+```
+Projektfolder
+| Skript_1.R
+| ...
+| Skript_n.R    
+|
++-- Data
+    | Datensatz_1.csv
+    | ...
+    | Datensatz_n.csv
+```
+
+---
+
+**🤔 Challange accepted?**
+
+![](images/good.gif){.videoframe width="210"}

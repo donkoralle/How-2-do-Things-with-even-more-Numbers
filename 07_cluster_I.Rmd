@@ -1,0 +1,542 @@
+# Clusteranalyse I: Grundlagen {#cluster1} 
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+In dieser Einheit werden die Grundlagen clusteranalytischer Verfahren vorgestellt und anhand eines Beispiels praktisch angewandt.
+
+```{r echo=FALSE, purl=FALSE}
+# myScriptname <- tools::file_path_sans_ext(tail(strsplit(rstudioapi::getSourceEditorContext()$path, "/")[[1]], 1))
+myScriptname <- "07_cluster_I"
+
+knitr::asis_output(paste(
+  "<p><strong>tl;dr: </strong>",
+  "<a href=\"https://kamihoeferl.at/lehre/vu_sozwiss_2/",
+  myScriptname,
+  ".R\" type=\"application/octet-stream\">Her mit dem Code!</a></p>",
+  sep = ""))
+```
+
+------------------------------------------------------------------------
+
+## Was passiert bei einer Clusteranalyse?
+
+Die prinzipielle Zielsetzung und Arbeitsschritte clusteranalytischer Verfahren wollen wir uns anhand einiger Folien genauer ansehen:
+
+```{r slidesCluster, echo=FALSE, purl=FALSE}
+mySlideshow <- "eh7_cluster_basics"
+mySlideWidth <- 600
+mySlideHeight <- 450
+
+knitr::asis_output(paste(
+  "<iframe src=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\" width=\"",
+  mySlideWidth,
+  "px\" height=\"",
+  mySlideHeight,
+  "px\" class=\"videoframe\" allowfullscreen>Your browser doesnot support iframes <a href=\"<https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".html#1\">click here to view the page directly.</a></iframe>", sep = ""))
+knitr::asis_output(paste(
+  "<p><a href=\"https://kamihoeferl.at/lehre/vu_sozwiss2_slides/",
+  mySlideshow,
+  ".pdf\">Die Slides als PDF</a></p>",
+  sep = ""))
+```
+
+Mittlerweile gibt es Vielzahl clusteranalytischer Verfahren, die sich hinsichtlich der verwendeten Proximitätsmaße und Fusionsalgorithmen unterscheiden (vgl. @Backhaus2018, 435ff.). Um in dieser Einheit einen **ersten Einstieg in das Thema** zu bieten, wird ein weiterer Folge der Fokus auf **hierarchisch agglomerative Clusteranalyse auf Basis euklidischer Distanzen** gelegt.
+
+## Ein Beispiel
+
+Wie in Einheit \@ref(reg1) nutzen wir den Datensatz zu den bezirksweiten COVID-19-Impfquoten (Stand 24.10.21). In diesem Datensatz wurden mehrere Teildatensätze miteinander verknüpft. Eine genaue Beschreibung dieser Teildatensätze findet sich in Kapitel \@ref(ouvert-reg1). Diese Teildatensätze wurden in einer Excel-Datei gesammelt, mittels Aggregation auf die einheitliche Bezugsebene der politischen Bezirke gebracht und im Tabellenblatt "ex" miteinander verknüpft.
+
+[**🔽 Die Excel-Datei kann hier heruntergeladen werden 🔽**](data/corona_bez_regression_v1.xlsx)
+
+> **👉 Anmerkung**: Wir gehen in dieser Einheit von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+### Ein Versuch zur Klassifikation der "Corona-Lage" in Österreich Bezirken
+
+Anhand dieses Datensatzes wollen wir übungshalber versuchen, die politischen Bezirke Österreichs hinsichtlich der in ihnen zum Stand Oktober 2021 vorherrschenden **"Corona-Lage"** zu klassifizieren. Der unscharfe Begriff "Corona-Lage" bedarf natürlich der **Operationalisierung**, mehr dazu später.
+
+## Einige Vorüberlegungen {#vorueberlegungen-cluster}
+
+Bevor wir die eigentliche Cluster-Analyse durchführen, müssen wir uns jedoch die folgenden Fragen stellen:
+
+1.  **Welche Variablen werden zur Clusterbildung herangezogen?**\
+    Diese Frage sollte sich sachlogisch beantworten lassen.
+
+2.  **Kann eine Gleichgewichtung der der Merkmale (= Variablen) sichergestellt werden?**\
+    Da vorab keine Informationen zur Bedeutung einzelner Variablen für die Gruppierungen der Merkmalsträger vorliegen, wird eine Gleichgewichtung der Variablen angenommen. Korrelierte Variablen würden dieser Gleichgewichtung zuwiderlaufen. Sollten stark korrelierte Variablen (Daumenregel: > 0,8) vorliegen:
+
+    -   sollten diese von der Clusterung ausgeschlossen werden;
+    -   Kann eine explorative Faktorenanalyse der Clusterung vorgeschalten werden.
+
+3.  **Weisen die gewählten Variablen "genügend" Varianz auf?**\
+    Konstante Variablen wären in der Clusterung nicht trennungswirksam und sollten daher ausgeschlossen werden.
+
+4.  **Sind die Messskalen meiner Variablen vergleichbar?**\
+    Sollten unterschiedliche Messskalen vorliegen, empfiehlt sich eine z-Transformierung der Variablen. Dadurch kann eine indirekte Gewichtung der Variablen vermieden werden (vgl. Punkt 2).
+
+5.  **Wie werden Ausreißer in der Analyse identifiziert und behandelt?**\
+    Da Ausreißer meist zu heterogenen Cluster-Lösungen führen, sollten "extreme" Ausreißer von der weiteren Analyse ausgeschlossen werden.
+
+Diese Fragen wollen wir in weiterer Folge kurz behandeln.
+
+🧐 Und was sagt der Captain dazu?
+
+![](images/make_it_so.gif){.videoframe width="210"}
+
+### Identifikation der zur Klassifikation verwendeten Variablen
+
+Die Identifikation dieser Variablen ist bei clusteranalytischen Verfahren stets eine inhaltlich getriebene Frage. In unserem Fall versuchen wir die "Corona-Lage" in den österreichischen Bezirken zum Stand Oktober 2021 zu klassifizieren. Was jedoch genau unter der "Corona-Lage" zu verstehen ist, blieb bislang unklar.
+
+Eine mediale Rundschau legt nahe, dass "Corona-Lage" ganz unterschiedlich ausgelegt werden kann:
+
+-   <https://www.tagesschau.de/inland/coronavirus-karte-deutschland-101.html>
+-   <https://www.ndr.de/nachrichten/niedersachsen/Die-Corona-Lage-in-Niedersachsen-und-in-Ihrer-Kommune,corona1458.html>
+-   <https://www.br.de/nachrichten/deutschland-welt/Risikogebiete-und-Fallzahlen-Corona-Daten-Europa,S9KAi0n>
+
+Um dem wissenschaftlichen Anspruch auf Nachvollziehbarkeit zu genügen, müssen wir also dieses abstrakte Konzept "Corona-Lage" [operationalisieren](https://de.wikipedia.org/wiki/Indikator_(Sozialwissenschaften)#Operationalisierung). In einer ersten, groben Annäherung wollen wir dies anhand von drei Dimensionen und vier Indikatoren tun:
+
+-   **Dimension 1:** Das dokumentierte **Vorsorgeverhalten**, abgebildet über den Anteil der Vollimmunisierten im Bezirk;
+
+-   **Dimension 2:** Der bisherige **demographische Impakt von COVID-19**, abgebildet über die Mortalität je 100.000 EinwohnerInnen im Bezirk;
+
+-   **Dimension 3:** Ausgewählte **Kennzeichen der betroffenen Bevölkerung**, abgebildet über den Anteil der Über-65-Jährigen und den Anteil der HochschulabsolventInnen im Bezirk.
+
+**🤔 Ist diese gewählte Operationalisierung "se yellow from se eg"?**
+
+Vermutlich nicht, da diese Operationalisierung primär durch den Wunsch geprägt ist, den aus den Kapitel \@ref(reg1) und \@ref(reg2) bekannten Datensatz erneut zu nutzen. Dementsprechend finden Indikatoren wie beispielsweise regionale Inzidenzen etc. keinen Eingang. Da wir in dieser Einheit den Fokus auf ein methodischen Kennenlernen clusteranalytischer Verfahren legen, wurde auf eine komplexere und validere Operationalisierung verzichtet.
+
+### Überprüfen der Gleichgewichtung der Variablen
+
+Für diese Überprüfung müssen wir einen Blick auf die Korrelationen zwischen den gewählten Variablen werfen.
+
+Dazu importieren wir zunächst unseren Datensatz:
+
+```{r DatenLaden, message=FALSE, warning=FALSE}
+library(readxl)     # Excel-Dateien lesen
+library(tidyverse)  # https://www.tidyverse.org/packages/
+
+daten <- read_excel("data/corona_bez_regression_v1.xlsx", sheet = "ex")
+```
+
+... und:
+
+-   bereinigen diesen um die Wiener Gemeindebezirke (vgl. Kapitel \@ref(dataimport-reg1)) und
+-   entfernen die nicht benötigten Variablen:
+
+```{r DatenFiltern}
+sel_daten <- daten %>%
+  filter(bez_id <= 900) %>%
+  select(bez_id, bez_txt, anteil_immun, tote_100k, bev_anteil_65plus, bildung_anteil_hochschule)
+```
+
+> **👉 Exkurs: Zur Clusterung genutzten Variablen merken** Um bei den weiteren Schritten die zur Klassifizierung verwendeten Variablen immer griffbereit zu haben, legen wir diese in einer Liste ab:
+>
+> ```{r ClusterVariablen}
+> myVars <- c("anteil_immun", "tote_100k", "bev_anteil_65plus", "bildung_anteil_hochschule")
+> ```
+
+Ähnlich zu den Überlegungen bei Regressionsmodellen (vgl. Kapitel \@ref(korrel-reg1)) macht es auch bei clusteranalytischen Verfahren wenig Sinn, hoch korrelierte Variablen für sein Modell zu nutzen. Daher:
+
+```{r KorrClustervars, message=FALSE}
+library(GGally)
+ggpairs(sel_daten, columns = 3:6)
+```
+
+Gemäß unserer **Daumenregel "Keine Korrelation über 0,8"** können wir 
+
+* davon ausgehen, dass keine implizite Ungleichgewichtung der Variablen stattfindet;
+* auf ein Ausscheiden hoch korrelierter Variablen verzichten.
+
+### Ein Blick auf die Varianz der ausgewählten Variablen
+
+Hier interessieren wir uns vor allem für die Streuung dieser Variablen: Je weniger Variablen streuen - also je eher sie einer Konstante entsprechen - umso weniger eigenen sie sich für clusteranalytische Verfahren. Konkrete Richtwerte bzw. Daumenregeln zum Kriterium der Streuung gibt es nicht, es obliegt damit der Analystin bzw. dem Analysten über die Akzeptabilität der Streuung zu entscheiden.
+
+Also:
+
+```{r DeskriptionClustervariablen1}
+streuungClustervars <- sel_daten %>%
+  select(all_of(myVars)) %>%
+  pivot_longer(cols = anteil_immun:bildung_anteil_hochschule, 
+               names_to = "Variable", values_to = "Messwert")
+ggplot(streuungClustervars, aes(x = Variable, y = Messwert)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1,alpha=0.2, color="red") +
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+```
+
+Hier sehen wir zunächst, dass Punkt 4 unserer Vorüberlegungen - die Vergleichbarkeit der Messskalen - nicht gegeben ist. Eine sinnvolle Einschätzung der Streuungen in unseren Cluster-Variablen können wir somit nicht vornehmen.
+
+Etwas Abhilfe schafft uns eine Überblick auf einige numerische Lage- und Verteilungsmaße:
+
+```{r DeskriptionClustervariablen2}
+sel_daten %>%
+  select(all_of(myVars)) %>%
+  summary()
+```
+
+Eine wirklich befriedigende Einschätzung der Streuung gelingt jedoch erst, nachdem wir die Cluster-Variablen z-transformiert haben:
+
+```{r Ztransform}
+sel_daten_trans <- sel_daten %>%
+  mutate(across(all_of(myVars),scale))
+```
+
+> **👉 Exkurs:
+> Die z-Transformation und ihre Vorteile bei Clusterungen** Ähnlich wie im Fall multipler Regressionen bietet es sich auch bei clusteranalytischen Verfahren an, metrische Variablen vor der Clusterung einer Z-Transformation zu unterziehen. Diese Transformation verhindert, dass über die unterschiedlichen Wertspannweiten und -lagen der Variablen eine implizite Gewichtung bei der Ermittlung von Distanzmaßen vorgenommen wird.
+
+Und nun:
+
+```{r DeskriptionClustervariablen3}
+streuungClustervars <- sel_daten_trans %>%
+  select(all_of(myVars)) %>%
+  pivot_longer(cols = anteil_immun:bildung_anteil_hochschule, 
+               names_to = "Variable", values_to = "Messwert")
+ggplot(streuungClustervars, aes(x = Variable, y = Messwert)) +
+  geom_boxplot() +
+  geom_jitter(width=0.1,alpha=0.2, color="red") +
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+```
+
+Wir sehen nun, dass bei allen Cluster-Variablen die Werte innerhalb ihrer zentralen 50% (= Höhe der Box) als auch über die jeweiligen Spannweiten gut verteilt sind. Wir müssen daher keine dieser Variablen aufgrund zu geringer Streuung vorab ausscheiden.
+
+### Die Identifikation clusteranalytischer Ausreißer
+
+Wie eingangs bereits erwähnt, ist die Identifikation von Ausreißern bei Clusterungen ein wichtiger vorbereitender Schritt.
+
+**🤔 Warum?**
+
+Zentrale Zielsetzung clusteranalytischer Verfahren ist die Zuordnung aller Beobachtungseinheiten in eine überschaubare Zahl an Gruppen. Diese Gruppen sollen dabei eine möglichst hohe Intracluster-Homogenität aufweisen, also möglichst ähnlich Element umfassen. Da Ausreißer per Definition eben sehr unähnliche Beobachtungseinheiten darstellen, würden deren Berücksichtigung bei Clusterungen sich negativ auf diese Homogenität auswirken.
+
+Identifizierte Ausreißer werden dabei jedoch nicht gänzlich aus der Clusterung entfernt. Vielmehr können diese vor der eigentlichen Clusterbildung manuell in einen eigenen Ausreißer-Cluster verschoben werden.
+
+Eine klassische Methode bei hierarchischen Clusterungen Ausreißer zu identifizieren, ist eine ex-ante Clusterung mittels des Single-Linkage Fusionsalgorithmus. Dieser erzeugt tendenziell wenige große Cluster und isoliert effektiv Ausreißer.
+
+Wir berechnen dabei zunächst die Euklidische Distanz zwischen allen Merkmalsträgern und wenden auf diese den Single-Linkage Fusionsalgorithmus an:
+
+```{r SingleLinkageClusterung}
+d0 <- dist(sel_daten_trans[myVars], method = "euclidean")
+fit0 <- hclust(d0, method="single")
+```
+
+Um den im Objekt "fit0" enthaltenden hierarchischen Fusionsverlauf sichtbar zu machen, nutzen wir ein [Dendrogramm](https://de.wikipedia.org/wiki/Hierarchische_Clusteranalyse#Dendrogramm):
+
+```{r DendroSingleLinkage}
+plot(fit0, labels = sel_daten_trans$bez_id, cex = 0.75,
+     main = "Single Linkage Clusterung")
+```
+
+Wir sehen, dass der Single-Linkage Fusionsalgorithmus eine lange Kette miteinander fusionierter Cluster bildet. Erst im letzten Schritt (im Dendrogramm links oben) wird dieser Metacluster mit dem Bezirk 102 (Rust im Burgenland) vereinigt. Der letzte vertikale Sprung vom kettenartigen Metacluster zum Bezirk 102 deutet an, dass beide Cluster sich deutlich von einander unterscheiden. Wir können daher davon ausgehen, dass der Bezirk 102 einen Ausreißer darstellt.
+
+Um in der finalen Clusterung die Intracluster-Homogenität zu sichern, ordnen wir den Bezirk 102 einem eigenen (ex-ante) Ausreißercluster zu. Für die finale Clusterung können wir daher den Bezirk 102 aus dem Datensatz entfernen:
+
+```{r BezirkRustFiltern}
+sel_daten_trans_2 <- sel_daten_trans %>%
+  filter(bez_id != "102")
+```
+
+------------------------------------------------------------------------
+
+**👉 Zwischenfazit:**\
+Wir konnten anhand der letzten Schritte sicherstellen, dass
+
+-   unsere Cluster-Variablen nicht (zu stark) miteinander korrelieren;
+-   unsere Cluster-variablen über genügend Streuung verfügen;
+-   unsere Cluster-Variablen z-transformiert wurden, um deren unterschiedliche Messskalen auszugleichen;
+-   wir den Bezirk 102 (Rust im Burgenland) vorab dem Ausreißercluster zugeordnet haben. 
+
+Der abschließenden Clusterung steht damit nichts mehr im Wege.
+
+------------------------------------------------------------------------
+
+## Die Clusterung der Bezirke
+
+Wie in den einleitenden Folien dargestellt (vgl. Kapitel \@ref(cluster1)), nutzen wir für die finale Clusterung den [Ward-Fusionsalgorithmus](https://en.wikipedia.org/wiki/Hierarchical_clustering#Linkage_criteria). Dieser Algorithmus versucht, die Varianz innerhalb der gebildeten Cluster zu minimieren und liefert meist mehrere, gleich stark besetzte Cluster.
+
+Dabei ermitteln wir zuerst wieder die euklidischen Distanzen zwischen den Merkmalsträgern und wenden auf diese den Ward-Algorithmus an:
+
+```{r WardClusterung}
+d1 <- dist(sel_daten_trans_2[myVars], method = "euclidean")
+fit1 <- hclust(d1, method="ward.D2")
+plot(fit1, labels = sel_daten_trans_2$bez_id, cex = 0.75,
+     main = "Ward Clusterung")
+```
+
+Im Vergleich zur Identifikation der Ausreißer mittels des Single-Linkage-Algorithmus sehen wir hier einen deutlich homogeneren Besatz der einzelnen Äste des Dendrogramms.
+
+### Die Anzahl der Cluster bestimmen
+
+Ein klassischer Weg zu Bestimmung der Clusteranzahl ist das sgn. [Elbow-Kriterium](https://en.wikipedia.org/wiki/Elbow_method_(clustering)): Man betrachtet dabei die Entwicklung der Intracluster-Heterogenität im Laufe der hierarchischen Clusterfusionierung. Ein Sprung (= Elbow) in dieser Heterogenitätsentwicklung kennzeichnet dabei eine mögliche Clusteranzahl. Da es üblicherweise mehrerer solcher Elbows geben kann, gilt es dabei eine Abwägung zwischen der Anzahl der Cluster (Interpretierbarkeit) und deren Heterogenität zu treffen.
+
+Wieviele Cluster "genug" bzw. "ideal" sind, lässt sich pauschal nicht beantworten. Es gilt dabei eine Balance aus inhaltlicher Auflösung und Übersichtlichkeit der Ergebnisse zu finden. Vermutlich lässt sich folgende Daumenregel auf viele sozialwissenschaftliche Fragestellungen anwenden:
+
+**👉 Definitiv weniger als 10, besser noch weniger als 7 Cluster.**
+
+Aber wie gesagt, die konkrete Entscheidung zur Anzahl der Cluster sollte aus der Abwägung von inhaltlicher Auflösung und Übersichtlichkeit der Ergebnisse getroffen werden. In letzter Konsequenz kann dies zu zielgruppenspezifischen Lösungen führen: Eine populärwissenschaftliche Ergebnisaufbereitung wird vermutlich von einer übersichtlicheren Lösung mit weniger Clustern profitieren. Eine Ergebnisdarstellung für ExpertInnen kann mit einer komplexeren Lösung (= mehr Cluster) auch differenziertere Antworten liefern.
+
+Kommen wir aber zurück zum Elbow-Diagramm. Dieses erhalten wir mittels:
+
+```{r, fig.width=7.5, fig.height=4}
+# Heterogenität der letzten 10 Schritte holen
+height <- sort(fit1$height)
+Schritt <- c(10:1)
+height <- height[(length(height)-9):length(height)]
+screeplot_data_1 <- data.frame(Schritt, height)
+# plotten
+ggplot(screeplot_data_1, aes(x=Schritt, y=height)) + 
+  geom_line(size=1) +
+  scale_x_continuous(breaks=Schritt) +
+  labs(x = "Anzhal Cluster") +
+  geom_vline(xintercept=4, color = "red") +
+  geom_vline(xintercept=5, linetype="dashed", color = "red") +
+  geom_vline(xintercept=9, linetype="solid", color = "red")
+```
+
+> **👉 Exkurs:**
+> Die von R als "height" bezeichnete Maß der Heterogenität entspricht bei der Ward-Methode der über alle Cluster aufsummierten quadrierten Error Sum of Squares (ESS).
+
+Wir sehen, dass wir bei Lösungen mit 4 und 9 Clustern die deutlichsten Knicke in der Zunahme der Heterogenität der Cluster sehen. Da wir aber zwischen diesen beiden Lösungen ein kontinuierliches Ansteigen dieser Heterogenität beobachten können, fällt eine definitive Entscheidung zur Anzahl der Cluster schwer.
+
+neben dem Elbow-Kriterium gibt es mittlerweile eine Vielzahl vor Verfahren zur Ermittlung der Cluster-Anzahl (vgl. @Kassambara2017, 128ff.). Ein klassischer Zugang, die Güte einer gewählten Clusteranzahl zu beurteilen, ist deren Trennschärfe zu visualisieren. Dazu werden die zur Clusterung verwendeten Variablen mittels einer [Hauptkomponentenanalyse](https://en.wikipedia.org/wiki/Principal_component_analysis) in zwei orthogonale (= unkorrelierte) Komponenten überführt. Dadurch kann eine Clusterlösung als zweidimensionaler Plot dargestellt werden.
+
+Anhand solcher Plots können wir zwei Eigenschaften einer Clusterlösung beurteilen:
+
+* Die Intracluster-Homogenität: kompakte Punktwolken in den Clustern
+* Die Intercluster-Heterogenität: Abstand & Überlappung der Cluster
+
+Und da wir noch nach eine Lösung zwischen 4 und 9 Clustern suchen:
+
+```{r, fig.width=7.5, fig.height=10, class.output = "videoframe"}
+library(cluster)
+par(mfrow=c(3,2))
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 4),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 4),
+         main = "Bivariater Clusterplot n = 4")
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 5),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 5),
+         main = "Bivariater Clusterplot n = 5")
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 6),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 6),
+         main = "Bivariater Clusterplot n = 6")
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 7),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 7),
+         main = "Bivariater Clusterplot n = 7")
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 8),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 8),
+         main = "Bivariater Clusterplot n = 8")
+clusplot(sel_daten_trans_2[myVars], cutree(fit1, k = 9),
+         labels=4, color=TRUE, shade=FALSE, lines = FALSE, col.p = cutree(fit1, k = 9),
+         main = "Bivariater Clusterplot n = 9")
+par(mfrow=c(1,1))
+```
+
+Als Balance zwischen inhaltlicher Auflösung und Übersichtlichkeit wollen wir uns an dieser Stelle für eine Lösung mit 5 Clustern entscheiden:
+
+```{r}
+# Anzahl Cluster setzen
+nCluster <- 5
+```
+
+Um abschließend herauszufinden, welcher Bezirk nun zu welchem dieser fünf Cluster gehört, greifen wir noch einmal auf das Dendrogramm zurück:  
+Wir schneiden an jener Stelle, wo wir fünf senkrechte Linien (= Cluster) treffen.
+
+```{r}
+plot(fit1, labels = sel_daten_trans_2$bez_id, cex = 0.75,
+     main = "Ward Clusterung")
+rect.hclust(fit1, k = nCluster, border="red")
+```
+
+Die von den roten Kästen umschlossenen Bezirke gehören einem Cluster an. Standardmäßig nummeriert R diese Cluster von 1 ganzzahlig aufsteigend durch. Wir erhalten somit folgenden Clusterbesatz:
+
+```{r}
+table(cutree(fit1, k = nCluster))
+```
+
+Diese Clusterzuordnungen wollen wir abschließend auch noch in unserem Datensatz ablegen:
+
+```{r assignClusters}
+# transformierte Daten
+sel_daten_trans_2$fit1_cl5 <- as_factor(cutree(fit1, k = nCluster))
+# Rohdaten: Rust zuerst entfernen
+sel_daten_2 <- sel_daten %>%
+  filter(bez_id != "102")
+sel_daten_2$fit1_cl5 <- as_factor(cutree(fit1, k = nCluster))
+```
+
+Der Vollständigkeit halber müssen wir noch den **Bezirk 102** (Rust im Burgenland) noch **manuell** unserem **Ausreißercluster** zuordnen:
+
+```{r assignAusreißerCluster}
+### transformierte Daten
+sel_daten_trans <- sel_daten_trans_2 %>%
+  select(bez_id, fit1_cl5) %>%
+  left_join(sel_daten_trans, ., by = "bez_id")
+# Rust manuell auf "Ausreißer Rust" setzen
+sel_daten_trans <- sel_daten_trans %>%
+  mutate(fit1_cl5 = fct_explicit_na(fit1_cl5, na_level = "Ausreißer Rust"))
+
+### absolute Daten
+sel_daten <- sel_daten_2 %>%
+  select(bez_id, fit1_cl5) %>%
+  left_join(sel_daten, ., by = "bez_id")
+# Rust manuell auf "Ausreißer Rust" setzen
+sel_daten <- sel_daten %>%
+  mutate(fit1_cl5 = fct_explicit_na(fit1_cl5, na_level = "Ausreißer Rust"))
+```
+
+## Inhaltliche Beschreibung der Cluster
+
+Zuletzt bliebe noch die Aufgabe die gefundenen Cluster inhaltlich zu interpretieren.
+
+Dazu können wir die zur Clusterung verwendeten Variablen clusterweise beschreiben und einander gegenüberstellen. Dies kann numerisch erfolgen ...
+
+```{r MedianClusterDesc}
+sel_daten %>%
+  group_by(fit1_cl5) %>%
+  summarise(across(anteil_immun:bildung_anteil_hochschule, median)) %>%
+  kable()
+```
+
+... und/oder graphisch:
+
+```{r barClusterDescAbs}
+sel_daten %>%
+  group_by(fit1_cl5) %>%
+  summarise(across(all_of(myVars), mean), .groups="keep") %>%
+  pivot_longer(all_of(myVars), names_to = "variable", values_to ="wert") %>%
+  ggplot(., aes(x=variable, y=wert, fill=variable)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~ fit1_cl5)
+```
+
+Da es bei absoluten Zahlen manchmal nicht einfach fällt, die Merkmalsausprägungen von Clustern als über- oder unterdurchschnittlich einzuordnen, bietet sich eine Auswertung der z-transformierten Werte an:
+
+```{r barClusterDescTrans}
+sel_daten_trans %>%
+  group_by(fit1_cl5) %>%
+  summarise(across(all_of(myVars), mean), .groups="keep") %>%
+  pivot_longer(all_of(myVars), names_to = "variable", values_to ="wert") %>%
+  ggplot(., aes(x=variable, y=wert, fill=variable)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  facet_wrap(~ fit1_cl5)
+```
+
+Zusätzlich können die clusterspezifischen Ausprägungen je Variable verglichen werden:
+
+```{r}
+ggplot(sel_daten, aes(x = fit1_cl5, y = anteil_immun, fill = fit1_cl5)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "Anteil Immunisierte", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.25, color="black") +
+  theme(legend.position = "none")
+
+ggplot(sel_daten, aes(x = fit1_cl5, y = tote_100k, fill = fit1_cl5)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "Mortalität", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.25, color="black") +
+  theme(legend.position = "none")
+
+ggplot(sel_daten, aes(x = fit1_cl5, y = bev_anteil_65plus, fill = fit1_cl5)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "Anteil 65+", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.25, color="black") +
+  theme(legend.position = "none")
+
+ggplot(sel_daten, aes(x = fit1_cl5, y = bildung_anteil_hochschule, fill = fit1_cl5)) +
+  geom_boxplot(outlier.shape = NA) +
+  labs(title = "Anteil Hochschule", x = "Cluster") +
+  geom_jitter(width=0.2,alpha=0.25, color="black") +
+  theme(legend.position = "none")
+```
+
+## Darstellung der räumlichen Verteilung
+
+Analog zu Einheit \@ref(reg1) können wir über eine einfache Choroplethenkarte auch die räumliche Verteilung der gefundenen Clusterlösung etwas näher betrachten.
+
+Dazu müssen wir noch die entsprechenden Geodaten nachziehen. Wir nutzen dazu wieder den aus Einheit \@ref(reg1) bekannten Datensatz:
+
+-   Politische Bezirke Österreichs 2021:  
+https://www.data.gv.at/katalog/dataset/stat_gliederung-osterreichs-in-politische-bezirke131e2/resource/d2659aca-306f-4e24-a318-bf9cfb32319f
+
+Den Inhalt dieses **ZIP-Archivs extrahieren** wir in unserem "data" Ordner in den **Unterordner "bez"**.
+
+> **👉 Anmerkung**: Wir gehen in weiterer Folge von folgender Verzeichnisstruktur aus:
+
+    **Projektfolder**
+    | skript_1.R
+    | ...
+    | skript_n.R    
+    +-- data
+    |     bez
+    |       | geodatensatz_1.xyz
+    |       | ...
+    |       | geodatensatz_n.xyz
+    |     | datensatz_1.xyz
+    |     | ...
+    |     | datensatz_n.xyz
+    +-- output
+
+In einem ersten Schritt laden wir nun unsere Geometriedaten und bereinigen diesen um die Wiener Stadtbezirke:
+
+```{r mapCleanWien}
+library(sf)
+library(tmap)
+bez <- read_sf("data/bez/STATISTIK_AUSTRIA_POLBEZ_20210101.shp")
+bez$id <- as.integer(bez$id)
+bez_sel <- bez %>%
+  filter(id <= 900)
+```
+
+Danach joinen wir unsere Clusterzuordnungen:
+
+```{r mapJoinCluster}
+joined_bez_sel <- left_join(bez_sel, sel_daten_trans,
+                            by = c("id" = "bez_id"))
+```
+
+Womit wir die eigentliche Visualisierung vornehmen können:
+
+```{r mapCl5, fig.width=9, fig.height=3.75}
+mapCl5 <- tm_shape(joined_bez_sel) +
+  tm_polygons(col = "fit1_cl5",
+              title = "5-er Cluster-\nLösung",
+              palette = "Set3",
+              # palette = wes_palette("Zissou1", 5),
+              legend.hist = TRUE) +
+  tm_text("id", size = 0.45, alpha = 0.5, remove.overlap = TRUE) +
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_legend(outside = TRUE,
+            legend.outside.size = 0.15,
+            hist.width = 1,
+            outer.margins = 0)
+mapCl5
+```
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, dass ...**
+
+* ... clusteranalytische Verfahren nur so gut sind, wie die **Operationalisierung** des zu klassifizierenden Konzepts;
+* ... hoch korrelierte Cluster-Variablen eine **implizite Gewichtung** bewirken können;
+* ... **unterschiedliche Messskalen** zu einer **Verzerrung** von Proximitätsmaßen führen können;  
+(👉 z-Transformation)
+* ... **Ausreißer** sich negativ auf die Intracluster-Homogenität auswirken;  
+(👉 Single-Linkage-Clusterung) 
+* ... sich die **optimale Clusteranzahl** aus einer Abwägung inhaltlicher Auflösung und Übersichtlichkeit heraus ergibt.
+
+**🤔 Und was sagt der Captain abschließend dazu?**
+
+![](images/clapping-star-trek.gif){.videoframe width="210"}

@@ -1,0 +1,39 @@
+# Warmup 1: Messen und Skalen
+
+## 📢 Zielsetzung dieser Einheit {.unnumbered}
+
+Wir wiederholen zunächst, wie quantitative Daten durch den **Prozess des Messens** erzeugt werden. Danach werfen wir einen kurzen Rückblick auf die **Skalenniveaus von Daten** und die daraus resultierenden Implikationen.
+
+------------------------------------------------------------------------
+
+Bevor wir uns damit beschäftigen, wie wir Daten gewinnen und auswerten können, lassen Sie uns einen kurzen Blick darauf werfen, was **quantitative Daten** denn eigentlich sind. Kurz und gut: Die **mittels Zahlen kodierte Merkmalsausprägungen** von Interesse. Diesen Prozess des numerischen Kodierens bezeichnen wir auch gerne als **messen**.
+
+## Was passiert beim Messen?
+
+Wie dieser Prozess des Messens genau abläuft, wollen wir in diesem Video näher betrachten:
+
+```{r Video_messen, eval=knitr::is_html_output(), echo=FALSE}
+library(knitr)
+knitr::asis_output('<video class="videoframe" width="100%" controls><source src="https://lms.uibk.ac.at/podcast/1194197008/Jfzmxx/102558165267942/_/uibkolat_1_102558165356962/media/eh3-0_messen.mp4"></video>')
+```
+
+## Skalenniveaus (reloaded)
+
+Die durch eine solche Messung erzeugten Daten weisen eine - für die weitere statistische Verwertung - wichtige Eigenschaft auf: Sie verfügen über ein bestimmtes **Skalenniveau**. Welche Skalenniveaus unterschieden werden und warum diese Unterscheidung wichtig ist, wollen wir hier kurz erörtern:
+
+```{r Video_skalen, eval=knitr::is_html_output(), echo=FALSE}
+library(knitr)
+knitr::asis_output('<video class="videoframe" width="100%" controls><source src="https://lms.uibk.ac.at/podcast/1194197008/Jfzmxx/103304845301718/_/uibkolat_1_102558165456078/media/eh3-0_skalenniveaus.mp4"></video>')
+```
+
+------------------------------------------------------------------------
+
+🏆 **Nun wissen wir, ...**
+
+-   dass beim **Messen** Ausprägungen von Merkmalen von Interesse **numerisch kodiert** werden.
+
+-   dass die so erzeugten **Variablen** unterschiedliche - sachlogisch ableitbare - **Skalenniveaus** haben.
+
+Lassen Sie uns aber noch etwas **weiter aufwärmen** ...
+
+![](images/warmup_1.gif){.videoframe}

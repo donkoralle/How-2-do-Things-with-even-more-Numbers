@@ -1,0 +1,6 @@
+book_filename: "How to do Things with Numbers"
+delete_merged_file: TRUE
+language:
+  label:
+    fig: "Abbildung "
+    tab: "Tabelle "
